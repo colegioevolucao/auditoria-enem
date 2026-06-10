@@ -1,0 +1,1200 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Auditoria de Avaliações — Colégio Evolução</title>
+<style>
+  *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+  :root{
+    --bg:#0D0F14;--surface:#141720;--card:#1A1E2A;--border:#252B3B;
+    --accent:#4F6EF7;--accent-soft:#4F6EF720;
+    --green:#34C97B;--green-soft:#34C97B20;
+    --yellow:#F5C842;--yellow-soft:#F5C84220;
+    --red:#F26B6B;--red-soft:#F26B6B20;
+    --text:#E8ECF5;--text2:#7A8299;--text3:#4A5068;
+  }
+  html,body{min-height:100vh;background:var(--bg);color:var(--text);font-family:'Segoe UI',system-ui,sans-serif;-webkit-font-smoothing:antialiased}
+  input,button,textarea{font-family:inherit}
+  ::-webkit-scrollbar{width:6px}::-webkit-scrollbar-track{background:var(--surface)}::-webkit-scrollbar-thumb{background:var(--border);border-radius:3px}
+  .screen{display:none}.screen.active{display:block}
+  /* API Key screen */
+  .api-wrap{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:20px}
+  .api-box{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:40px;max-width:480px;width:100%}
+  .api-box h1{font-size:22px;font-weight:800;margin-bottom:6px;letter-spacing:-.5px}
+  .api-box p{font-size:13px;color:var(--text2);line-height:1.6;margin-bottom:24px}
+  .api-label{font-size:11px;color:var(--text3);text-transform:uppercase;letter-spacing:.5px;display:block;margin-bottom:6px}
+  .api-input{width:100%;background:var(--card);border:1px solid var(--border);border-radius:8px;padding:10px 14px;color:var(--text);font-size:13px;outline:none;font-family:monospace}
+  .api-input:focus{border-color:var(--accent)}
+  .api-hint{font-size:11px;color:var(--text3);margin-top:6px;margin-bottom:20px}
+  .api-link{color:var(--accent);text-decoration:none}
+  /* Upload screen */
+  .wrap{max-width:720px;margin:0 auto;padding:32px 20px}
+  .dot{width:8px;height:8px;border-radius:50%;background:var(--accent);display:inline-block;margin-right:8px}
+  .label-tag{font-size:11px;color:var(--accent);font-family:monospace;letter-spacing:2px;text-transform:uppercase}
+  h1{font-size:28px;font-weight:800;letter-spacing:-.5px;margin:6px 0 4px}
+  .subtitle{font-size:14px;color:var(--text2);margin-bottom:32px}
+  .card{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:24px;margin-bottom:20px}
+  .section-title{font-size:13px;color:var(--text2);text-transform:uppercase;letter-spacing:1px;margin-bottom:16px}
+  .upload-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+  .upload-card{border:1.5px dashed var(--border);border-radius:12px;background:var(--card);padding:20px 16px;cursor:pointer;transition:all .2s;display:flex;flex-direction:column;align-items:center;gap:8px;min-height:130px;justify-content:center;text-align:center}
+  .upload-card:hover{border-color:var(--accent);background:var(--accent-soft)}
+  .upload-card.has-file{border-color:var(--green);background:var(--green-soft)}
+  .upload-card.drag{border-color:var(--accent);background:var(--accent-soft)}
+  .upload-icon{font-size:28px}
+  .upload-label{font-size:12px;font-weight:600;color:var(--text2);font-family:monospace;letter-spacing:1px}
+  .upload-card.has-file .upload-label{color:var(--green)}
+  .upload-hint{font-size:10px;color:var(--text3)}
+  .upload-filename{font-size:11px;color:var(--text3);max-width:140px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .meta-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+  .field label{font-size:11px;color:var(--text3);text-transform:uppercase;letter-spacing:.5px;display:block;margin-bottom:4px}
+  .field input{width:100%;background:var(--card);border:1px solid var(--border);border-radius:8px;padding:8px 12px;color:var(--text);font-size:13px;outline:none}
+  .field input:focus{border-color:var(--accent)}
+  .btn{width:100%;padding:16px;border-radius:10px;border:none;font-size:15px;font-weight:700;cursor:pointer;transition:all .2s;letter-spacing:.5px}
+  .btn-primary{background:var(--accent);color:#fff}
+  .btn-primary:hover{opacity:.9}
+  .btn-primary:disabled{background:var(--border);color:var(--text3);cursor:not-allowed}
+  .btn-secondary{background:var(--card);border:1px solid var(--border);color:var(--text2);padding:8px 16px;border-radius:8px;font-size:13px;width:auto}
+  .error-box{background:var(--red-soft);border:1px solid var(--red);border-radius:8px;padding:14px;margin-bottom:16px;font-size:13px;color:var(--red)}
+  /* Processing */
+  .proc-wrap{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:20px}
+  .proc-box{text-align:center;max-width:400px;width:100%}
+  .spin{font-size:48px;display:inline-block;animation:spin 2s linear infinite;margin-bottom:20px}
+  @keyframes spin{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}
+  .proc-title{font-size:20px;font-weight:700;margin-bottom:8px}
+  .proc-msg{font-size:14px;color:var(--text2);line-height:1.6;margin-bottom:24px}
+  .steps-box{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:16px;text-align:left;display:flex;flex-direction:column;gap:8px}
+  .step-row{display:flex;gap:10px;align-items:center}
+  .step-num{width:22px;height:22px;border-radius:50%;background:var(--border);display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;color:#fff;flex-shrink:0;transition:all .3s}
+  .step-num.active{background:var(--accent)}
+  .step-num.done{background:var(--green)}
+  .step-text{font-size:12px;color:var(--text3);transition:all .3s}
+  .step-text.active{color:var(--text)}
+  .step-text.done{color:var(--green)}
+  .progress-bar{margin-top:16px;height:3px;background:var(--border);border-radius:2px;overflow:hidden}
+  .progress-fill{height:100%;background:var(--accent);border-radius:2px;animation:prog 3s ease-in-out infinite}
+  @keyframes prog{0%{width:5%}50%{width:80%}100%{width:95%}}
+  /* Results */
+  .topbar{background:var(--surface);border-bottom:1px solid var(--border);padding:12px 24px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:10}
+  .topbar-tag{font-size:11px;color:var(--accent);font-family:monospace;letter-spacing:2px}
+  .topbar-title{font-size:16px;font-weight:700}
+  .results-wrap{max-width:900px;margin:0 auto;padding:24px 20px}
+  .tabs{display:flex;gap:4px;margin-bottom:24px;background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:4px}
+  .tab{flex:1;padding:9px 0;border-radius:7px;border:none;background:transparent;color:var(--text2);font-size:12px;font-weight:400;cursor:pointer;transition:all .2s}
+  .tab.active{background:var(--accent);color:#fff;font-weight:700}
+  .tab-content{display:none}.tab-content.active{display:block}
+  .panel-card{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:24px;margin-bottom:20px}
+  .panel-title{font-size:13px;color:var(--text2);text-transform:uppercase;letter-spacing:1px;margin-bottom:16px}
+  .rings{display:flex;justify-content:space-around;flex-wrap:wrap;gap:16px}
+  .ring-wrap{display:flex;flex-direction:column;align-items:center;gap:6px}
+  .ring-label{font-size:11px;color:var(--text2);text-align:center;max-width:90px}
+  .big-num{font-size:36px;font-weight:800;font-family:monospace;color:var(--text)}
+  .dif-grid{display:flex;gap:12px;margin-bottom:14px}
+  .dif-card{flex:1;background:var(--card);border-radius:10px;padding:14px 12px;text-align:center}
+  .dif-num{font-size:24px;font-weight:800;font-family:monospace}
+  .dif-label{font-size:11px;color:var(--text2);margin-top:2px}
+  .dif-pct{font-size:10px;color:var(--text3)}
+  .dif-bar{height:10px;border-radius:5px;overflow:hidden;display:flex}
+  .bar-chart{display:flex;flex-direction:column;gap:6px}
+  .bar-row{display:flex;align-items:center;gap:10px}
+  .bar-key{font-size:11px;color:var(--text2);min-width:140px;text-align:right}
+  .bar-track{flex:1;background:var(--border);border-radius:4px;height:16px;overflow:hidden}
+  .bar-fill{height:100%;border-radius:4px;transition:width 1s ease}
+  .bar-val{font-size:11px;color:var(--text3);min-width:24px;font-family:monospace}
+  .lacunas-box{background:var(--yellow-soft);border:1px solid #F5C84240;border-radius:14px;padding:24px}
+  .lacunas-title{font-size:13px;color:var(--yellow);text-transform:uppercase;letter-spacing:1px;margin-bottom:12px}
+  .lacuna-item{font-size:13px;color:var(--text2);margin-bottom:6px}
+  /* Question cards */
+  .q-card{background:var(--card);border:1px solid var(--border);border-radius:10px;margin-bottom:8px;overflow:hidden}
+  .q-header{display:flex;align-items:center;gap:12px;padding:12px 16px;cursor:pointer;user-select:none}
+  .q-num{font-size:13px;font-weight:700;font-family:monospace;min-width:28px}
+  .q-info{flex:1;min-width:0;font-size:12px;color:var(--text2);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .q-badges{display:flex;gap:8px;align-items:center;flex-shrink:0}
+  .badge{font-size:10px;font-weight:600;color:#fff;padding:2px 8px;border-radius:20px}
+  .badge-perfil{font-size:10px;font-weight:700}
+  .q-arrow{font-size:12px;color:var(--text3)}
+  .q-body{border-top:1px solid var(--border);padding:14px 16px;display:none;grid-template-columns:1fr 1fr;gap:12px}
+  .q-body.open{display:grid}
+  .q-field label{font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:.5px;display:block;margin-bottom:2px}
+  .q-field span{font-size:12px;color:var(--text)}
+  .q-full{grid-column:1/-1}
+  .q-justif{font-size:12px;color:var(--text2);line-height:1.6}
+  .q-problems{font-size:12px;color:var(--red);margin-bottom:2px}
+  .q-problems-title{font-size:10px;color:var(--red);text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px}
+  /* Issues */
+  .issue-row{display:flex;gap:10px;align-items:flex-start;padding:10px 12px;border-radius:8px;margin-bottom:6px;border-left-width:3px;border-left-style:solid}
+  .issue-q{font-size:11px;font-weight:700;font-family:monospace;min-width:28px;padding-top:1px}
+  .issue-type{font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.5px}
+  .issue-msg{font-size:12px;color:var(--text2)}
+  /* Recommendations */
+  .rec-card{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:14px 16px;margin-bottom:10px;display:flex;gap:12px;align-items:flex-start}
+  .rec-num{width:24px;height:24px;border-radius:50%;background:var(--accent-soft);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;color:var(--accent);flex-shrink:0}
+  .rec-text{font-size:13px;color:var(--text2);line-height:1.6}
+  .empty-state{text-align:center;padding:60px;color:var(--green)}
+  .empty-icon{font-size:40px;margin-bottom:12px}
+  .empty-text{font-size:16px;font-weight:600}
+  .issues-summary{font-size:13px;color:var(--text2);margin-bottom:16px}
+  @media(max-width:600px){
+    .upload-grid{grid-template-columns:1fr}
+    .meta-grid{grid-template-columns:1fr}
+    .dif-grid{flex-direction:column}
+    .rings{gap:12px}
+  }
+</style>
+</head>
+<body>
+
+<!-- ── TELA 0: API KEY ─────────────────────────────────────── -->
+<div id="screen-api" class="screen active">
+  <div class="api-wrap">
+    <div class="api-box">
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:16px">
+        <span style="width:8px;height:8px;border-radius:50%;background:var(--accent);display:inline-block"></span>
+        <span style="font-size:11px;color:var(--accent);font-family:monospace;letter-spacing:2px;text-transform:uppercase">Colégio Evolução</span>
+      </div>
+      <h1>Auditoria de Avaliações</h1>
+      <p>Sistema de análise pedagógica com base na Matriz de Referência do ENEM.<br>Para começar, informe sua chave de API da Anthropic.</p>
+      <label class="api-label">Chave de API Anthropic</label>
+      <input type="password" id="api-key-input" class="api-input" placeholder="sk-ant-...">
+      <p class="api-hint">Obtenha sua chave em <a href="https://console.anthropic.com" target="_blank" class="api-link">console.anthropic.com</a> → API Keys.<br>A chave fica salva apenas neste navegador.</p>
+      <button class="btn btn-primary" onclick="salvarChave()">Entrar →</button>
+      <div id="api-error" class="error-box" style="display:none;margin-top:12px;margin-bottom:0"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ── TELA 1: UPLOAD ──────────────────────────────────────── -->
+<div id="screen-upload" class="screen">
+  <div class="wrap">
+    <div style="margin-bottom:36px">
+      <div style="display:flex;align-items:center;margin-bottom:8px">
+        <span class="dot"></span><span class="label-tag">Colégio Evolução</span>
+      </div>
+      <h1>Auditoria de Avaliações</h1>
+      <p class="subtitle">Análise técnica e pedagógica com base na Matriz de Referência do ENEM</p>
+    </div>
+
+    <div class="card">
+      <p class="section-title">Prova (até 3 partes)</p>
+      <div class="upload-grid">
+        <div class="upload-card" id="drop-prova1" onclick="document.getElementById('file-prova1').click()" ondragover="dragOver(event,'drop-prova1')" ondragleave="dragLeave('drop-prova1')" ondrop="dropFile(event,'prova1','drop-prova1')">
+          <input type="file" id="file-prova1" accept=".pdf,.jpg,.jpeg,.png" style="display:none" onchange="fileSelected(this,'prova1','drop-prova1')">
+          <span class="upload-icon" id="icon-prova1">📄</span>
+          <span class="upload-label" id="label-prova1">PROVA — PARTE 1</span>
+          <span class="upload-hint" id="hint-prova1">obrigatório</span>
+        </div>
+        <div class="upload-card" id="drop-prova2" onclick="document.getElementById('file-prova2').click()" ondragover="dragOver(event,'drop-prova2')" ondragleave="dragLeave('drop-prova2')" ondrop="dropFile(event,'prova2','drop-prova2')">
+          <input type="file" id="file-prova2" accept=".pdf,.jpg,.jpeg,.png" style="display:none" onchange="fileSelected(this,'prova2','drop-prova2')">
+          <span class="upload-icon" id="icon-prova2">📄</span>
+          <span class="upload-label" id="label-prova2">PROVA — PARTE 2</span>
+          <span class="upload-hint" id="hint-prova2">opcional</span>
+        </div>
+        <div class="upload-card" id="drop-prova3" onclick="document.getElementById('file-prova3').click()" ondragover="dragOver(event,'drop-prova3')" ondragleave="dragLeave('drop-prova3')" ondrop="dropFile(event,'prova3','drop-prova3')">
+          <input type="file" id="file-prova3" accept=".pdf,.jpg,.jpeg,.png" style="display:none" onchange="fileSelected(this,'prova3','drop-prova3')">
+          <span class="upload-icon" id="icon-prova3">📄</span>
+          <span class="upload-label" id="label-prova3">PROVA — PARTE 3</span>
+          <span class="upload-hint" id="hint-prova3">opcional</span>
+        </div>
+        <div class="upload-card" id="drop-gabarito" onclick="document.getElementById('file-gabarito').click()" ondragover="dragOver(event,'drop-gabarito')" ondragleave="dragLeave('drop-gabarito')" ondrop="dropFile(event,'gabarito','drop-gabarito')">
+          <input type="file" id="file-gabarito" accept=".pdf,.jpg,.jpeg,.png" style="display:none" onchange="fileSelected(this,'gabarito','drop-gabarito')">
+          <span class="upload-icon" id="icon-gabarito">🔑</span>
+          <span class="upload-label" id="label-gabarito">GABARITO</span>
+          <span class="upload-hint" id="hint-gabarito">obrigatório</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <p class="section-title">Documentos Pedagógicos</p>
+      <div class="upload-grid">
+        <div class="upload-card" id="drop-programa" onclick="document.getElementById('file-programa').click()" ondragover="dragOver(event,'drop-programa')" ondragleave="dragLeave('drop-programa')" ondrop="dropFile(event,'programa','drop-programa')">
+          <input type="file" id="file-programa" accept=".pdf,.jpg,.jpeg,.png" style="display:none" onchange="fileSelected(this,'programa','drop-programa')">
+          <span class="upload-icon" id="icon-programa">📋</span>
+          <span class="upload-label" id="label-programa">PROGRAMA DA AVALIAÇÃO</span>
+          <span class="upload-hint" id="hint-programa">obrigatório</span>
+        </div>
+        <div class="upload-card" id="drop-objetivos" onclick="document.getElementById('file-objetivos').click()" ondragover="dragOver(event,'drop-objetivos')" ondragleave="dragLeave('drop-objetivos')" ondrop="dropFile(event,'objetivos','drop-objetivos')">
+          <input type="file" id="file-objetivos" accept=".pdf,.jpg,.jpeg,.png" style="display:none" onchange="fileSelected(this,'objetivos','drop-objetivos')">
+          <span class="upload-icon" id="icon-objetivos">🎯</span>
+          <span class="upload-label" id="label-objetivos">OBJETIVOS DE APRENDIZAGEM</span>
+          <span class="upload-hint" id="hint-objetivos">obrigatório</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <p class="section-title">Informações da Avaliação</p>
+      <div class="meta-grid">
+        <div class="field"><label>Série</label><input type="text" id="meta-serie" placeholder="Ex: 3ª Série EM"></div>
+        <div class="field"><label>Componente Curricular</label><input type="text" id="meta-componente" placeholder="Ex: Biologia"></div>
+        <div class="field"><label>Trimestre</label><input type="text" id="meta-trimestre" placeholder="Ex: 1º Trimestre"></div>
+        <div class="field"><label>Professor</label><input type="text" id="meta-professor" placeholder="Ex: Prof. João Silva"></div>
+      </div>
+    </div>
+
+    <div id="upload-error" class="error-box" style="display:none"></div>
+    <button class="btn btn-primary" id="btn-auditar" onclick="iniciarAuditoria()" disabled>Envie os 4 arquivos para continuar</button>
+    <div style="text-align:center;margin-top:12px">
+      <button class="btn btn-secondary" onclick="trocarChave()">🔑 Trocar chave de API</button>
+    </div>
+  </div>
+</div>
+
+<!-- ── TELA 2: PROCESSANDO ─────────────────────────────────── -->
+<div id="screen-proc" class="screen">
+  <div class="proc-wrap">
+    <div class="proc-box">
+      <div class="spin">🔍</div>
+      <h2 class="proc-title">Analisando a prova...</h2>
+      <p class="proc-msg" id="proc-msg">Preparando...</p>
+      <div class="steps-box">
+        <div class="step-row"><div class="step-num" id="sn1">1</div><span class="step-text" id="st1">Extraindo questões da prova</span></div>
+        <div class="step-row"><div class="step-num" id="sn2">2</div><span class="step-text" id="st2">Lendo programa e objetivos</span></div>
+        <div class="step-row"><div class="step-num" id="sn3">3</div><span class="step-text" id="st3">Auditando por lotes de 10</span></div>
+        <div class="step-row"><div class="step-num" id="sn4">4</div><span class="step-text" id="st4">Consolidando relatório</span></div>
+      </div>
+      <div class="progress-bar"><div class="progress-fill"></div></div>
+    </div>
+  </div>
+</div>
+
+<!-- ── TELA 3: RESULTADOS ──────────────────────────────────── -->
+<div id="screen-result" class="screen">
+  <div class="topbar">
+    <div>
+      <div class="topbar-tag">AUDITORIA CONCLUÍDA</div>
+      <div class="topbar-title" id="result-title">Avaliação</div>
+    </div>
+    <div style="display:flex;gap:8px;align-items:center">
+      <button class="btn btn-secondary" id="btn-pdf" onclick="exportarPDF()">⬇ Baixar Relatório</button>
+      <button class="btn btn-secondary" onclick="novaAuditoria()">Nova Auditoria</button>
+    </div>
+  </div>
+  <div id="pdf-aviso" style="display:none;background:#34C97B20;border-bottom:1px solid #34C97B40;padding:10px 24px;font-size:12px;color:#34C97B;text-align:center">
+    ✅ Relatório baixado! Abra o arquivo no navegador → pressione <strong>Ctrl+P</strong> (ou Cmd+P no Mac) → escolha <strong>"Salvar como PDF"</strong>
+  </div>
+  <div class="results-wrap">
+    <div class="tabs">
+      <button class="tab active" onclick="setTab('painel',this)">Painel Executivo</button>
+      <button class="tab" onclick="setTab('questoes',this)">Questões</button>
+      <button class="tab" onclick="setTab('naoconf',this)">Não Conformidades</button>
+      <button class="tab" onclick="setTab('recomend',this)">Recomendações</button>
+    </div>
+    <div id="tab-painel" class="tab-content active"></div>
+    <div id="tab-questoes" class="tab-content"></div>
+    <div id="tab-naoconf" class="tab-content"></div>
+    <div id="tab-recomend" class="tab-content"></div>
+  </div>
+</div>
+
+<script>
+// ── Estado ────────────────────────────────────────────────────
+const files = { prova1: null, prova2: null, prova3: null, gabarito: null, programa: null, objetivos: null };
+let apiKey = '';
+
+function showScreen(id) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+}
+
+// Inicializa após DOM pronto
+document.addEventListener('DOMContentLoaded', () => {
+  apiKey = localStorage.getItem('anthropic_key') || '';
+  if (apiKey) {
+    showScreen('screen-upload');
+  } else {
+    showScreen('screen-api');
+  }
+  document.getElementById('api-key-input').addEventListener('keydown', e => {
+    if (e.key === 'Enter') salvarChave();
+  });
+});
+
+// ── API Key ───────────────────────────────────────────────────
+function salvarChave() {
+  const k = document.getElementById('api-key-input').value.trim();
+  if (!k.startsWith('sk-ant-')) {
+    document.getElementById('api-error').textContent = 'Chave inválida. Deve começar com sk-ant-';
+    document.getElementById('api-error').style.display = 'block';
+    return;
+  }
+  apiKey = k;
+  localStorage.setItem('anthropic_key', k);
+  showScreen('screen-upload');
+}
+
+function trocarChave() {
+  localStorage.removeItem('anthropic_key');
+  apiKey = '';
+  showScreen('screen-api');
+}
+
+// ── Upload ────────────────────────────────────────────────────
+function dragOver(e, id) { e.preventDefault(); document.getElementById(id).classList.add('drag'); }
+function dragLeave(id) { document.getElementById(id).classList.remove('drag'); }
+function dropFile(e, key, id) {
+  e.preventDefault();
+  dragLeave(id);
+  const f = e.dataTransfer.files[0];
+  if (f) setFile(key, f, id);
+}
+function fileSelected(input, key, id) {
+  if (input.files[0]) setFile(key, input.files[0], id);
+}
+function setFile(key, f, id) {
+  files[key] = f;
+  const card = document.getElementById(id);
+  card.classList.add('has-file');
+  document.getElementById('icon-' + key).textContent = '✅';
+  const lbl = document.getElementById('label-' + key);
+  lbl.style.color = 'var(--green)';
+  document.getElementById('hint-' + key).textContent = f.name.length > 30 ? f.name.substring(0, 30) + '...' : f.name;
+  checkAllFiles();
+}
+function checkAllFiles() {
+  const all = files.prova1 && files.gabarito && files.programa && files.objetivos;
+  const btn = document.getElementById('btn-auditar');
+  btn.disabled = !all;
+  btn.textContent = all ? '🔍 Iniciar Auditoria' : 'Envie os arquivos obrigatórios para continuar';
+}
+
+// ── Base64 ────────────────────────────────────────────────────
+function toBase64(file) {
+  return new Promise((res, rej) => {
+    const r = new FileReader();
+    r.onload = () => res(r.result.split(',')[1]);
+    r.onerror = rej;
+    r.readAsDataURL(file);
+  });
+}
+function getMime(file) {
+  if (file.type) return file.type;
+  if (file.name.endsWith('.pdf')) return 'application/pdf';
+  if (file.name.endsWith('.png')) return 'image/png';
+  return 'image/jpeg';
+}
+async function buildContent(file, label) {
+  const b64 = await toBase64(file);
+  const mime = getMime(file);
+  const isImg = mime.startsWith('image/');
+  return [
+    { type: 'text', text: `[${label}]` },
+    isImg
+      ? { type: 'image', source: { type: 'base64', media_type: mime, data: b64 } }
+      : { type: 'document', source: { type: 'base64', media_type: 'application/pdf', data: b64 } }
+  ];
+}
+
+// ── API Call ──────────────────────────────────────────────────
+const delay = ms => new Promise(res => setTimeout(res, ms));
+
+async function callAPI(messages, system, max_tokens = 4000) {
+  const resp = await fetch('https://api.anthropic.com/v1/messages', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'x-api-key': apiKey,
+      'anthropic-version': '2023-06-01',
+      'anthropic-dangerous-direct-browser-access': 'true'
+    },
+    body: JSON.stringify({ model: 'claude-haiku-4-5-20251001', max_tokens, system, messages, temperature: 0 })
+  });
+  if (!resp.ok) {
+    const err = await resp.json().catch(() => ({}));
+    const msg = err.error?.message || `Erro ${resp.status}`;
+    // Rate limit — aguarda e tenta novamente uma vez
+    if (resp.status === 429 || (err.type === 'exceeded_limit')) {
+      setProgress('Limite de requisições atingido. Aguardando 30s...');
+      await delay(30000);
+      return callAPI(messages, system, max_tokens);
+    }
+    throw new Error(msg);
+  }
+  const data = await resp.json();
+  const text = data.content?.find(b => b.type === 'text')?.text || '';
+  // Pausa de 2s entre chamadas para evitar rate limit
+  await delay(2000);
+  return text.replace(/```json|```/g, '').trim();
+}
+
+// ── Progress ──────────────────────────────────────────────────
+function setProgress(msg, step) {
+  document.getElementById('proc-msg').textContent = msg;
+  [1,2,3,4].forEach(n => {
+    document.getElementById('sn'+n).className = 'step-num' + (n < step ? ' done' : n === step ? ' active' : '');
+    document.getElementById('sn'+n).textContent = n < step ? '✓' : n;
+    document.getElementById('st'+n).className = 'step-text' + (n < step ? ' done' : n === step ? ' active' : '');
+  });
+}
+
+// ── Auditoria ─────────────────────────────────────────────────
+async function iniciarAuditoria() {
+  // Captura metadados ANTES de mudar de tela
+  const metaSerie      = v('meta-serie');
+  const metaComponente = v('meta-componente') || 'componente não informado';
+  const metaTrimestre  = v('meta-trimestre');
+  const metaProfessor  = v('meta-professor');
+  const metaStr = `Série: ${metaSerie||'não informado'}, Componente: ${metaComponente}, Trimestre: ${metaTrimestre||'não informado'}`;
+
+  showScreen('screen-proc');
+  document.getElementById('upload-error').style.display = 'none';
+
+  try {
+    // ── Etapa 1: Extrair questões de cada parte da prova ──────
+    setProgress('Extraindo questões da prova...', 1);
+    const gabaritoContent = await buildContent(files.gabarito, 'GABARITO');
+    const partes = [files.prova1, files.prova2, files.prova3].filter(Boolean);
+    let questoesExtraidas = [];
+
+    for (let p = 0; p < partes.length; p++) {
+      const provaContent = await buildContent(partes[p], `PROVA PARTE ${p+1}`);
+      setProgress(`Extraindo parte ${p+1} de ${partes.length}...`, 1);
+
+      const extrairJSON = await callAPI([{
+        role: 'user',
+        content: [
+          ...provaContent, ...gabaritoContent,
+          { type: 'text', text: `Extraia as questões desta parte da prova. Para cada questão retorne o enunciado com até 150 palavras (suficiente para identificar o conteúdo avaliado). JSON sem markdown:\n{"questoes":[{"n":1,"enunciado":"texto do enunciado até 150 palavras incluindo o contexto/texto de apoio se houver","gabarito":"A","ctx":true,"cmd":true,"alt":5}]}\nCampos: n=número, enunciado=texto real da questão (até 150 palavras), gabarito=letra correta, ctx=tem texto de apoio/contexto (true/false), cmd=tem comando claro (true/false), alt=quantidade de alternativas.\nRetorne APENAS o JSON.` }
+        ]
+      }], 'Você extrai questões de provas escolares com precisão. Extraia o enunciado real de cada questão com até 150 palavras, preservando o contexto necessário para identificar o conteúdo avaliado. Retorne apenas JSON válido, sem explicações.', 6000);
+
+      let questoesParte;
+      try {
+        const parsed = JSON.parse(extrairJSON);
+        questoesParte = Array.isArray(parsed) ? parsed : (parsed.questoes || parsed.items || parsed.questions || []);
+      } catch {
+        const arrMatch = extrairJSON.match(/\[[\s\S]*?\]/);
+        if (arrMatch) { try { questoesParte = JSON.parse(arrMatch[0]); } catch { questoesParte = []; } }
+        else questoesParte = [];
+      }
+
+      if (!questoesParte || questoesParte.length === 0)
+        throw new Error(`Parte ${p+1} não retornou questões. Verifique se o arquivo está legível.`);
+
+      questoesExtraidas.push(...questoesParte.map((q, i) => ({
+        numero: q.numero ?? q.n ?? q.number ?? (questoesExtraidas.length + i + 1),
+        enunciado: (q.enunciado ?? q.resumo ?? q.summary ?? q.text ?? '').trim(),
+        gabarito: q.gabarito ?? q.answer ?? '',
+        temContexto: q.ctx ?? q.temContexto ?? false,
+        temComando: q.cmd ?? q.temComando ?? true,
+        qtdAlternativas: q.alt ?? q.qtdAlternativas ?? 5,
+      })));
+    }
+
+    const total = questoesExtraidas.length;
+
+    // Etapa 2
+    setProgress('Lendo programa e objetivos...', 2);
+    const programaContent = await buildContent(files.programa, 'PROGRAMA');
+    const objetivosContent = await buildContent(files.objetivos, 'OBJETIVOS');
+
+    const contextoJSON = await callAPI([{
+      role: 'user',
+      content: [
+        ...programaContent, ...objetivosContent,
+        { type: 'text', text: `Extraia TODOS os itens deste programa de avaliação.
+
+O documento tem este formato:
+COMPONENTE - Professor
+• Capítulo/Conteúdo 1
+• Capítulo/Conteúdo 2
+
+Extraia cada bullet point como um item separado, associado ao seu componente e professor.
+
+Retorne APENAS este JSON sem texto extra, sem markdown:
+{
+  "itens": [
+    {"componente": "ARTE", "professor": "José Mantovani", "capitulo": "Capítulo 8 - A Arte e o Sagrado", "conteudos": ["Capítulo 8 - A Arte e o Sagrado"]},
+    {"componente": "GRAMÁTICA", "professor": "Pedro Rogério", "capitulo": "Capítulo 9 - Sentença simples - sujeito e predicado", "conteudos": ["Capítulo 9 - Sentença simples - sujeito e predicado"]},
+    {"componente": "GRAMÁTICA", "professor": "Pedro Rogério", "capitulo": "Semântica - Campo Lexical (Sem Capítulo)", "conteudos": ["Semântica - Campo Lexical (Sem Capítulo)"]}
+  ],
+  "objetivos": [],
+  "habilidadesEsperadas": []
+}
+
+REGRAS:
+1. Cada bullet point vira um item separado com seu próprio capitulo e conteudo
+2. O campo "conteudos" deve conter exatamente o mesmo texto do "capitulo"
+3. Preserve o texto EXATO de cada bullet — não resuma, não altere
+4. Inclua TODOS os bullets de TODOS os componentes` }
+      ]
+    }], 'Extrator preciso de programas pedagógicos. Preserve o texto exato de cada item. Retorne apenas JSON válido.', 5000);
+
+    let contexto;
+    try {
+      const parsed = JSON.parse(contextoJSON);
+
+      if (parsed.itens && Array.isArray(parsed.itens)) {
+        const itens = parsed.itens;
+        // Cada item tem capitulo = conteudo (estrutura flat deste programa)
+        const todosConteudos = itens.map(i => i.capitulo).filter(Boolean);
+        const todosCapitulos = [...new Set(todosConteudos)];
+
+        contexto = {
+          itens,
+          capitulos: todosCapitulos,
+          conteudos: todosConteudos,
+          conteudoParaCap: Object.fromEntries(itens.map(i => [i.capitulo, i.capitulo])),
+          conteudoParaComp: Object.fromEntries(itens.map(i => [i.capitulo, i.componente])),
+          capParaComponente: Object.fromEntries(itens.map(i => [i.capitulo, i.componente])),
+          objetivos: parsed.objetivos ?? [],
+          habilidadesEsperadas: parsed.habilidadesEsperadas ?? [],
+        };
+      } else {
+        contexto = { itens:[], capitulos:[], conteudos:[], conteudoParaCap:{}, conteudoParaComp:{}, capParaComponente:{}, objetivos:[], habilidadesEsperadas:[] };
+      }
+    } catch {
+      contexto = { itens:[], capitulos:[], conteudos:[], conteudoParaCap:{}, conteudoParaComp:{}, capParaComponente:{}, objetivos:[], habilidadesEsperadas:[] };
+    }
+    ['capitulos','conteudos','objetivos','habilidadesEsperadas'].forEach(k => {
+      if (!Array.isArray(contexto[k])) contexto[k] = [];
+    });
+
+
+    // Etapa 3
+    const LOTE = 10;
+    const todasQuestoes = [];
+    const totalLotes = Math.ceil(total / LOTE);
+
+    for (let i = 0; i < total; i += LOTE) {
+      const lote = questoesExtraidas.slice(i, i + LOTE);
+      const numLote = Math.floor(i / LOTE) + 1;
+      setProgress(`Auditando lote ${numLote}/${totalLotes} (Q${i+1}–Q${Math.min(i+LOTE,total)})...`, 3);
+
+      // Monta lista hierárquica para a IA escolher
+      const programaHierarquico = contexto.itens?.length > 0
+        ? contexto.itens.map(it => `[${it.componente}] ${it.capitulo}`).join('\n')
+        : contexto.capitulos.join('\n');
+
+      const conteudosList = contexto.conteudos.map((c,i)=>`${i+1}. ${c}`).join('\n');
+      const capitulosList = contexto.capitulos.map((c,i)=>`${i+1}. ${c}`).join('\n');
+
+      const auditJSON = await callAPI([{
+        role: 'user',
+        content: [{
+          type: 'text',
+          text: `PROVA: ${metaStr}
+
+PROGRAMA DA AVALIAÇÃO (estrutura completa):
+${programaHierarquico}
+
+LISTA EXATA DE CAPÍTULOS (copie um destes no campo "capitulo"):
+${capitulosList}
+
+LISTA EXATA DE CONTEÚDOS (copie um destes no campo "conteudo"):
+${conteudosList}
+
+OBJETIVOS: ${contexto.objetivos?.join(', ')}
+
+QUESTÕES PARA AUDITAR:
+${lote.map(q => `Q${q.numero}: ${q.enunciado} | gabarito:${q.gabarito} | temContexto:${q.temContexto} | temComando:${q.temComando} | alternativas:${q.qtdAlternativas}`).join('\n')}
+
+REGRAS OBRIGATÓRIAS:
+1. "capitulo" deve ser copiado EXATAMENTE da LISTA DE CAPÍTULOS. Nunca invente.
+2. "conteudo" deve ser copiado EXATAMENTE da LISTA DE CONTEÚDOS. Nunca invente.
+3. Associe cada questão ao componente e capítulo CORRETO com base no conteúdo da questão.
+4. Não misture conteúdos de componentes diferentes (ex: não associe questão de Literatura a capítulo de Arte).
+
+JSON compacto sem markdown:
+{"questoes":[{"numero":1,"competencia":"C1","habilidade":"H01","capitulo":"TEXTO EXATO DO CAPÍTULO","conteudo":"TEXTO EXATO DO CONTEÚDO","objetivo":"obj","gabarito":"A","dificuldade":"Média","perfilEnem":"Adequado","justificativaEnem":"1-2 frases explicando aderência ao ENEM","justificativa":"1 frase de análise pedagógica","problemas":[]}]}`
+        }]
+      }], `Você é um auditor pedagógico do ENEM. Classifique cada questão seguindo RIGOROSAMENTE estes critérios objetivos:
+
+DIFICULDADE — use exatamente um destes critérios:
+- Fácil: exige apenas memorização ou reconhecimento direto de conceito
+- Média: exige compreensão, aplicação ou análise de conceito
+- Difícil: exige síntese, avaliação, raciocínio complexo ou múltiplos conceitos integrados
+
+PERFIL ENEM — use exatamente um destes critérios:
+- Excelente: tem contexto real + situação-problema + mobiliza habilidade ENEM + exige interpretação + interdisciplinar
+- Adequado: tem contexto + mobiliza habilidade ENEM + exige interpretação, mas falta interdisciplinaridade ou situação-problema completa
+- Parcialmente adequado: tem algum contexto mas é predominantemente conceitual, com pouca exigência de interpretação
+- Inadequado: sem contexto real, puramente memorização ou definição, sem mobilização de habilidade ENEM
+
+Seja consistente. Aplique os mesmos critérios em todas as questões. Retorne apenas JSON válido e compacto.`, 6000);
+
+      let auditadas;
+      try {
+        const parsed = JSON.parse(auditJSON);
+        auditadas = Array.isArray(parsed) ? parsed : (parsed.questoes || parsed.items || parsed.questions || []);
+      } catch {
+        // tenta extrair objetos individuais de questão
+        const objs = auditJSON.match(/\{[^{}]*"numero"\s*:\s*\d+[\s\S]*?\}/g) || [];
+        auditadas = objs.map(o => { try { return JSON.parse(o); } catch { return null; } }).filter(Boolean);
+        if (auditadas.length === 0) {
+          const arrMatch = auditJSON.match(/\[[\s\S]*\]/);
+          if (arrMatch) { try { auditadas = JSON.parse(arrMatch[0]); } catch {} }
+        }
+      }
+      // garante que cada questão tem os campos mínimos
+      auditadas = (auditadas || []).map((q,i) => {
+        // Normaliza capitulo e conteudo — remove espaços extras
+        const cap = (q.capitulo ?? q.chapter ?? '—').trim();
+        const cont = (q.conteudo ?? q.content ?? '—').trim();
+        // Verifica se capitulo e conteudo estão na lista do programa
+        const capValido = contexto.capitulos.includes(cap) ? cap : (contexto.capitulos.find(c => c.toLowerCase().includes(cap.toLowerCase())) || cap);
+        const contValido = contexto.conteudos.includes(cont) ? cont : (contexto.conteudos.find(c => c.toLowerCase().includes(cont.toLowerCase())) || cont);
+        return {
+          numero: q.numero ?? q.n ?? (lote[i]?.numero ?? i+1),
+          competencia: (q.competencia ?? q.competency ?? '—').trim(),
+          habilidade: (q.habilidade ?? q.skill ?? '—').trim(),
+          capitulo: capValido,
+          conteudo: contValido,
+          objetivo: (q.objetivo ?? q.objective ?? '—').trim(),
+          gabarito: (q.gabarito ?? q.answer ?? lote[i]?.gabarito ?? '—').trim(),
+          dificuldade: q.dificuldade ?? q.difficulty ?? 'Média',
+          perfilEnem: q.perfilEnem ?? q.profile ?? 'Adequado',
+          justificativaEnem: (q.justificativaEnem ?? q.justificativa_enem ?? q.enem_justification ?? '—').trim(),
+          justificativa: (q.justificativa ?? q.justification ?? q.reasoning ?? '—').trim(),
+          problemas: Array.isArray(q.problemas) ? q.problemas : (q.problems || q.issues || []),
+        };
+      });
+      if (auditadas.length === 0) throw new Error(`Lote ${numLote} não retornou dados. Tente novamente.`);
+      todasQuestoes.push(...auditadas);
+    }
+
+    // Etapa 4
+    setProgress('Consolidando relatório...', 4);
+    const dif = todasQuestoes.reduce((a,q) => { a[q.dificuldade]=(a[q.dificuldade]||0)+1; return a; }, {});
+    const perfisArr = todasQuestoes.map(q => q.perfilEnem);
+    const excelente  = perfisArr.filter(p => p==='Excelente').length;
+    const adequado   = perfisArr.filter(p => p==='Adequado').length;
+    const parcial    = perfisArr.filter(p => p==='Parcialmente adequado').length;
+    const inadequado = perfisArr.filter(p => p==='Inadequado').length;
+
+    const indiceQualidade = Math.round(((excelente*100+adequado*80+parcial*50+inadequado*20)/(total*100))*100);
+    const aderenciaEnem   = Math.round(((excelente+adequado)/total)*100);
+    const componente      = metaComponente;
+
+    const capMap  = todasQuestoes.reduce((a,q)=>{ a[q.capitulo]=(a[q.capitulo]||0)+1; return a; },{});
+    const habMap  = todasQuestoes.reduce((a,q)=>{ const h=q.habilidade?.split('—')[0]?.trim()||q.habilidade; a[h]=(a[h]||0)+1; return a; },{});
+    const compMap = todasQuestoes.reduce((a,q)=>{ a[q.competencia]=(a[q.competencia]||0)+1; return a; },{});
+
+    // Mapa conteúdo → capítulo via questões auditadas
+    const capPorConteudo = {};
+    todasQuestoes.forEach(q => { if (q.conteudo && q.capitulo) capPorConteudo[q.conteudo] = q.capitulo; });
+
+    // Cobertura por conteúdo — comparação normalizada
+    const conteudosAvaliados = new Set(todasQuestoes.map(q => (q.conteudo||'').trim().toLowerCase()));
+
+    const coberturaConteudos = (contexto.conteudos||[]).map(c => {
+      const cNorm = c.trim().toLowerCase();
+      const avaliado = conteudosAvaliados.has(cNorm);
+      const cap = (contexto.conteudoParaCap?.[c] || capPorConteudo[c] || contexto.capitulos?.[0] || '—').trim();
+      const comp = (contexto.conteudoParaComp?.[c] || componente).trim();
+      return { componente: comp, capitulo: cap, conteudo: c.trim(), avaliado };
+    }).sort((a,b) => a.avaliado === b.avaliado ? 0 : a.avaliado ? -1 : 1);
+
+    const totalConteudos = coberturaConteudos.length;
+    const avaliadosCount = coberturaConteudos.filter(c=>c.avaliado).length;
+    const cobertura = totalConteudos > 0 ? Math.round((avaliadosCount/totalConteudos)*100) : 75;
+
+    const conteudosNaoAval = coberturaConteudos.filter(c=>!c.avaliado).map(c=>c.conteudo);
+
+    const naoConf = todasQuestoes.flatMap(q =>
+      (q.problemas||[]).map(p => ({
+        questao: q.numero,
+        tipo: p.toLowerCase().includes('gabarito')?'Gabarito':p.toLowerCase().includes('alternativ')?'Alternativas':p.toLowerCase().includes('context')?'Contextualização':'Estrutura',
+        mensagem: p,
+        severidade: (p.toLowerCase().includes('erro')||p.toLowerCase().includes('ausente')||p.toLowerCase().includes('incorret'))?'erro':'alerta'
+      }))
+    );
+
+    const lacunas = [
+      ...conteudosNaoAval.map(c => {
+        const capL = contexto.conteudoParaCap?.[c] || capPorConteudo[c] || '—';
+        const compL = contexto.conteudoParaComp?.[c] || componente;
+        return `${compL} — ${capL}: "${c}" não foi avaliado`;
+      }),
+      ...(dif['Difícil']===0?['Nenhuma questão difícil — considere incluir questões de maior complexidade']:[]),
+      ...(inadequado>0?[`${inadequado} questão(ões) Inadequado ao ENEM — revisar estrutura e contextualização`]:[]),
+    ];
+
+    const recomendacoes = [
+      ...naoConf.filter(n=>n.severidade==='erro').map(n=>`Q${n.questao}: ${n.mensagem}`),
+      ...(cobertura<70?['Ampliar a cobertura de conteúdos do programa na prova']:[]),
+      ...(aderenciaEnem<60?['Revisar questões para maior aderência ao modelo ENEM']:[]),
+      ...(((dif['Fácil']||0)/total)>0.5?['Aumentar o nível de dificuldade médio da prova']:[]),
+    ];
+
+    const resultado = {
+      resumo: { totalQuestoes: total, indiceQualidade, aderenciaEnem, coberturaCurricular: cobertura,
+        distribuicaoDificuldade: { Fácil: dif['Fácil']||0, Média: dif['Média']||0, Difícil: dif['Difícil']||0 } },
+      questoes: todasQuestoes,
+      naoConformidades: naoConf,
+      coberturaConteudos,
+      distribuicaoCapitulos: Object.entries(capMap).map(([k,v2])=>({k,v:v2})).filter(d=>d.k&&d.k!=='—'),
+      distribuicaoHabilidades: Object.entries(habMap).map(([k,v2])=>({k,v:v2})).sort((a,b)=>b.v-a.v).slice(0,10),
+      distribuicaoCompetencias: Object.entries(compMap).map(([k,v2])=>({k,v:v2})),
+      lacunas: lacunas.length>0?lacunas:['Nenhuma lacuna crítica identificada'],
+      recomendacoes: recomendacoes.length>0?recomendacoes:['A prova apresenta boa qualidade geral.'],
+    };
+
+    _resultado = resultado;
+    _resultTitulo = `${metaComponente||'Avaliação'}${metaSerie?' · '+metaSerie:''}${metaTrimestre?' · '+metaTrimestre:''}`;
+    renderResultados(resultado);
+    showScreen('screen-result');
+
+  } catch(e) {
+    showScreen('screen-upload');
+    const err = document.getElementById('upload-error');
+    err.textContent = '⚠️ ' + e.message;
+    err.style.display = 'block';
+  }
+}
+
+function v(id) { return document.getElementById(id)?.value?.trim() || ''; }
+
+// ── Render ────────────────────────────────────────────────────
+function renderResultados(r) {
+  document.getElementById('result-title').textContent = _resultTitulo || 'Auditoria';
+  renderPainel(r);
+  renderQuestoes(r.questoes);
+  renderNaoConf(r.naoConformidades, r.lacunas, r.coberturaConteudos);
+  renderRecomendacoes(r.recomendacoes);
+}
+
+function ring(score, label, color) {
+  const r=36, circ=2*Math.PI*r, dash=(score/100)*circ;
+  return `<div class="ring-wrap">
+    <svg width="90" height="90" viewBox="0 0 90 90">
+      <circle cx="45" cy="45" r="${r}" fill="none" stroke="var(--border)" stroke-width="7"/>
+      <circle cx="45" cy="45" r="${r}" fill="none" stroke="${color}" stroke-width="7"
+        stroke-dasharray="${dash} ${circ}" stroke-linecap="round" transform="rotate(-90 45 45)"/>
+      <text x="45" y="50" text-anchor="middle" fill="var(--text)" font-size="15" font-weight="700" font-family="monospace">${score}%</text>
+    </svg>
+    <span class="ring-label">${label}</span>
+  </div>`;
+}
+
+function barChart(data, colorFn) {
+  const max = Math.max(...data.map(d=>d.v), 1);
+  return `<div class="bar-chart">${data.map(d=>`
+    <div class="bar-row">
+      <span class="bar-key">${d.k}</span>
+      <div class="bar-track"><div class="bar-fill" style="width:${(d.v/max)*100}%;background:${colorFn?colorFn(d):'var(--accent)'}"></div></div>
+      <span class="bar-val">${d.v}</span>
+    </div>`).join('')}</div>`;
+}
+
+function renderPainel(r) {
+  if (!r?.resumo) return;
+  const dif = r.resumo.distribuicaoDificuldade || { Fácil:0, Média:0, Difícil:0 };
+  const total = Object.values(dif).reduce((a,b)=>a+b,0)||1;
+  const difColors = { Fácil:'var(--green)', Média:'var(--yellow)', Difícil:'var(--red)' };
+  const perfis = (r.questoes||[]).reduce((acc,q)=>{ acc[q.perfilEnem]=(acc[q.perfilEnem]||0)+1; return acc; },{});
+
+  document.getElementById('tab-painel').innerHTML = `
+    <div class="panel-card">
+      <p class="panel-title">Índices Gerais</p>
+      <div class="rings">
+        ${ring(r.resumo.indiceQualidade,'Qualidade Geral','var(--accent)')}
+        ${ring(r.resumo.aderenciaEnem,'Aderência ao ENEM','var(--green)')}
+        ${ring(r.resumo.coberturaCurricular,'Cobertura Curricular','var(--yellow)')}
+        <div class="ring-wrap">
+          <div style="width:90px;height:90px;display:flex;align-items:center;justify-content:center">
+            <span class="big-num">${r.resumo.totalQuestoes}</span>
+          </div>
+          <span class="ring-label">Questões analisadas</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="panel-card">
+      <p class="panel-title">Distribuição por Dificuldade</p>
+      <div class="dif-grid">
+        ${Object.entries(dif).map(([k,v2])=>`
+          <div class="dif-card" style="border:1px solid ${difColors[k]}30">
+            <div class="dif-num" style="color:${difColors[k]}">${v2}</div>
+            <div class="dif-label">${k}</div>
+            <div class="dif-pct">${Math.round((v2/total)*100)}%</div>
+          </div>`).join('')}
+      </div>
+      <div class="dif-bar">
+        ${Object.entries(dif).map(([k,v2])=>`<div style="flex:${v2||0.01};background:${difColors[k]}"></div>`).join('')}
+      </div>
+    </div>
+
+    <div class="panel-card">
+      <p class="panel-title">Perfil ENEM por Questão</p>
+      ${barChart(
+        ['Excelente','Adequado','Parcialmente adequado','Inadequado'].map(k=>({k,v:perfis[k]||0})),
+        d=>({'Excelente':'var(--green)','Adequado':'var(--accent)','Parcialmente adequado':'var(--yellow)','Inadequado':'var(--red)'}[d.k])
+      )}
+    </div>
+
+    ${r.distribuicaoCapitulos?.length>0?`
+    <div class="panel-card">
+      <p class="panel-title">Questões por Capítulo</p>
+      ${barChart(r.distribuicaoCapitulos)}
+    </div>`:''}
+
+    ${r.coberturaConteudos?.length>0?`
+    <div class="panel-card">
+      <p class="panel-title">Cobertura do Programa por Conteúdo</p>
+      <div style="display:flex;gap:16px;margin-bottom:14px;flex-wrap:wrap">
+        <div style="display:flex;align-items:center;gap:6px"><div style="width:12px;height:12px;border-radius:3px;background:var(--green)"></div><span style="font-size:11px;color:var(--text2)">Avaliado</span></div>
+        <div style="display:flex;align-items:center;gap:6px"><div style="width:12px;height:12px;border-radius:3px;background:var(--red)"></div><span style="font-size:11px;color:var(--text2)">Não avaliado</span></div>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:5px">
+        ${r.coberturaConteudos.map(c=>`
+          <div style="display:flex;align-items:center;gap:10px">
+            <div style="width:10px;height:10px;border-radius:50%;background:${c.avaliado?'var(--green)':'var(--red)'};flex-shrink:0"></div>
+            <span style="font-size:11px;color:var(--text3);min-width:110px">${c.capitulo}</span>
+            <span style="font-size:12px;color:${c.avaliado?'var(--text)':'var(--text3)'};flex:1">${c.conteudo}</span>
+            <span style="font-size:10px;font-weight:700;color:${c.avaliado?'var(--green)':'var(--red)'};min-width:80px;text-align:right">${c.avaliado?'✓ Avaliado':'✗ Não avaliado'}</span>
+          </div>`).join('')}
+      </div>
+    </div>`:''}
+
+    ${r.lacunas?.length>0?`
+    <div class="lacunas-box">
+      <p class="lacunas-title">⚠ Lacunas Identificadas</p>
+      ${r.lacunas.map(l=>`<div class="lacuna-item">• ${l}</div>`).join('')}
+    </div>`:''}
+  `;
+}
+
+function renderQuestoes(questoes) {
+  if (!questoes?.length) {
+    document.getElementById('tab-questoes').innerHTML = '<div class="empty-state"><div class="empty-icon">📋</div><div class="empty-text">Nenhuma questão para exibir</div></div>';
+    return;
+  }
+  const perfil = {'Excelente':'var(--green)','Adequado':'var(--accent)','Parcialmente adequado':'var(--yellow)','Inadequado':'var(--red)'};
+  document.getElementById('tab-questoes').innerHTML = `
+    <div style="font-size:13px;color:var(--text2);margin-bottom:16px">${questoes.length} questões analisadas</div>
+    <div style="overflow-x:auto">
+    <table style="width:100%;border-collapse:collapse;font-size:12px">
+      <thead>
+        <tr style="background:var(--surface);border-bottom:2px solid var(--accent)">
+          <th style="padding:10px 12px;text-align:left;font-size:11px;text-transform:uppercase;letter-spacing:.5px;color:var(--accent);white-space:nowrap">Q</th>
+          <th style="padding:10px 12px;text-align:left;font-size:11px;text-transform:uppercase;letter-spacing:.5px;color:var(--accent);white-space:nowrap">Capítulo / Assunto</th>
+          <th style="padding:10px 12px;text-align:left;font-size:11px;text-transform:uppercase;letter-spacing:.5px;color:var(--accent);white-space:nowrap">Competência</th>
+          <th style="padding:10px 12px;text-align:left;font-size:11px;text-transform:uppercase;letter-spacing:.5px;color:var(--accent);white-space:nowrap">Habilidade</th>
+          <th style="padding:10px 12px;text-align:left;font-size:11px;text-transform:uppercase;letter-spacing:.5px;color:var(--accent);white-space:nowrap">Conteúdo</th>
+          <th style="padding:10px 12px;text-align:left;font-size:11px;text-transform:uppercase;letter-spacing:.5px;color:var(--accent);white-space:nowrap">Dificuldade</th>
+          <th style="padding:10px 12px;text-align:left;font-size:11px;text-transform:uppercase;letter-spacing:.5px;color:var(--accent);white-space:nowrap">Perfil ENEM</th>
+          <th style="padding:10px 12px;text-align:left;font-size:11px;text-transform:uppercase;letter-spacing:.5px;color:var(--accent);white-space:nowrap">Gabarito</th>
+        </tr>
+      </thead>
+      <tbody>
+        ${questoes.map((q,i)=>`
+          <tr style="border-bottom:1px solid var(--border);background:${i%2===0?'transparent':'var(--surface)'}; cursor:pointer"
+              onclick="toggleQDetail(${q.numero})">
+            <td style="padding:10px 12px;font-weight:700;font-family:monospace;color:var(--text)">${q.numero}</td>
+            <td style="padding:10px 12px;color:var(--accent);font-weight:600;max-width:160px">${q.capitulo||'—'}</td>
+            <td style="padding:10px 12px;color:var(--text2);max-width:120px">${q.competencia||'—'}</td>
+            <td style="padding:10px 12px;color:var(--text2);max-width:120px">${q.habilidade||'—'}</td>
+            <td style="padding:10px 12px;color:var(--text2);max-width:180px">${q.conteudo||'—'}</td>
+            <td style="padding:10px 12px;white-space:nowrap">
+              <span style="font-size:10px;font-weight:700;color:#fff;padding:3px 10px;border-radius:20px;background:${q.dificuldade==='Fácil'?'var(--green)':q.dificuldade==='Difícil'?'var(--red)':'var(--yellow)'}">${q.dificuldade||'—'}</span>
+            </td>
+            <td style="padding:10px 12px;font-weight:700;white-space:nowrap;color:${perfil[q.perfilEnem]||'var(--text3)'}">${q.perfilEnem||'—'}</td>
+            <td style="padding:10px 12px;font-family:monospace;font-weight:700;color:var(--text)">${q.gabarito||'—'}</td>
+          </tr>
+          <tr id="qdetail-${q.numero}" style="display:none">
+            <td colspan="8" style="padding:0">
+              <div style="padding:16px 20px;background:var(--card);border-left:3px solid ${perfil[q.perfilEnem]||'var(--border)'}">
+                <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px">
+                  <div>
+                    <div style="font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:.5px;margin-bottom:3px">Objetivo de Aprendizagem</div>
+                    <div style="font-size:12px;color:var(--text)">${q.objetivo||'—'}</div>
+                  </div>
+                  <div>
+                    <div style="font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:.5px;margin-bottom:3px">Problemas Identificados</div>
+                    <div style="font-size:12px;color:var(--red)">${q.problemas?.length>0?q.problemas.map(p=>`• ${p}`).join('<br>'):'Nenhum'}</div>
+                  </div>
+                </div>
+                <div style="background:${ {'Excelente':'var(--green-soft)','Adequado':'var(--accent-soft)','Parcialmente adequado':'var(--yellow-soft)','Inadequado':'var(--red-soft)'}[q.perfilEnem]||'var(--surface)' };border-radius:8px;padding:12px">
+                  <div style="font-size:10px;font-weight:700;color:${perfil[q.perfilEnem]||'var(--text3)'};text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px">Justificativa — Aderência ao ENEM</div>
+                  <div style="font-size:12px;color:var(--text2);line-height:1.6">${q.justificativaEnem||q.justificativa||'—'}</div>
+                </div>
+              </div>
+            </td>
+          </tr>`).join('')}
+      </tbody>
+    </table>
+    </div>
+  `;
+}
+
+function toggleQDetail(n) {
+  const row = document.getElementById('qdetail-'+n);
+  if (!row) return;
+  row.style.display = row.style.display === 'none' ? 'table-row' : 'none';
+}
+
+function renderNaoConf(naoConf, lacunas, coberturaConteudos) {
+  const erros   = (naoConf||[]).filter(n=>n.severidade==='erro');
+  const alertas = (naoConf||[]).filter(n=>n.severidade==='alerta');
+  const infos   = (naoConf||[]).filter(n=>n.severidade==='info');
+  const colors  = { erro:'var(--red)', alerta:'var(--yellow)', info:'var(--accent)' };
+  const bgs     = { erro:'var(--red-soft)', alerta:'var(--yellow-soft)', info:'var(--accent-soft)' };
+
+  const naoAvaliados = (coberturaConteudos||[]).filter(c=>!c.avaliado);
+  const totalConf = erros.length + alertas.length + infos.length;
+  const totalLacunas = naoAvaliados.length;
+
+  if (totalConf === 0 && totalLacunas === 0) {
+    document.getElementById('tab-naoconf').innerHTML = `<div class="empty-state"><div class="empty-icon">✅</div><div class="empty-text">Nenhuma não conformidade identificada</div></div>`;
+    return;
+  }
+
+  document.getElementById('tab-naoconf').innerHTML = `
+
+    ${totalConf > 0 ? `
+    <div style="margin-bottom:28px">
+      <div style="font-size:13px;font-weight:700;color:var(--text);margin-bottom:12px;display:flex;align-items:center;gap:8px">
+        <span style="width:8px;height:8px;border-radius:50%;background:var(--red);display:inline-block"></span>
+        Problemas nas Questões
+        <span style="font-size:11px;color:var(--text3);font-weight:400">${erros.length} erros · ${alertas.length} alertas · ${infos.length} informações</span>
+      </div>
+      ${[...erros,...alertas,...infos].map(n=>`
+        <div class="issue-row" style="background:${bgs[n.severidade]};border-left-color:${colors[n.severidade]}">
+          <span class="issue-q" style="color:${colors[n.severidade]}">Q${n.questao}</span>
+          <div>
+            <span class="issue-type" style="color:${colors[n.severidade]}">${n.tipo} · </span>
+            <span class="issue-msg">${n.mensagem}</span>
+          </div>
+        </div>`).join('')}
+    </div>` : ''}
+
+    ${totalLacunas > 0 ? `
+    <div>
+      <div style="font-size:13px;font-weight:700;color:var(--text);margin-bottom:12px;display:flex;align-items:center;gap:8px">
+        <span style="width:8px;height:8px;border-radius:50%;background:var(--yellow);display:inline-block"></span>
+        Lacunas de Conteúdo
+        <span style="font-size:11px;color:var(--text3);font-weight:400">${totalLacunas} conteúdo(s) do programa não avaliado(s)</span>
+      </div>
+      <table style="width:100%;border-collapse:collapse;font-size:12px">
+        <thead>
+          <tr style="background:var(--surface);border-bottom:2px solid var(--yellow)">
+            <th style="padding:9px 12px;text-align:left;font-size:11px;text-transform:uppercase;letter-spacing:.5px;color:var(--yellow)">Componente</th>
+            <th style="padding:9px 12px;text-align:left;font-size:11px;text-transform:uppercase;letter-spacing:.5px;color:var(--yellow)">Capítulo</th>
+            <th style="padding:9px 12px;text-align:left;font-size:11px;text-transform:uppercase;letter-spacing:.5px;color:var(--yellow)">Conteúdo não avaliado</th>
+            <th style="padding:9px 12px;text-align:left;font-size:11px;text-transform:uppercase;letter-spacing:.5px;color:var(--yellow)">Status</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${naoAvaliados.map((c,i)=>`
+            <tr style="border-bottom:1px solid var(--border);background:${i%2===0?'transparent':'var(--surface)'}">
+              <td style="padding:9px 12px;color:var(--text2)">${c.componente||'—'}</td>
+              <td style="padding:9px 12px;color:var(--accent);font-weight:600">${c.capitulo||'—'}</td>
+              <td style="padding:9px 12px;color:var(--text)">${c.conteudo}</td>
+              <td style="padding:9px 12px"><span style="font-size:10px;font-weight:700;color:var(--yellow);background:var(--yellow-soft);padding:3px 8px;border-radius:12px">✗ Não avaliado</span></td>
+            </tr>`).join('')}
+        </tbody>
+      </table>
+    </div>` : ''}
+  `;
+}
+
+function renderRecomendacoes(recs) {
+  document.getElementById('tab-recomend').innerHTML = recs.map((r,i)=>`
+    <div class="rec-card">
+      <div class="rec-num">${i+1}</div>
+      <span class="rec-text">${r}</span>
+    </div>`).join('');
+}
+
+function setTab(id, btn) {
+  document.querySelectorAll('.tab-content').forEach(t=>t.classList.remove('active'));
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+  document.getElementById('tab-'+id).classList.add('active');
+  btn.classList.add('active');
+}
+
+// ── Export PDF ────────────────────────────────────────────────
+let _resultado = null;
+let _resultTitulo = '';
+
+function exportarPDF() {
+  if (!_resultado) { alert('Nenhum resultado para exportar.'); return; }
+  const r = _resultado;
+  const titulo = _resultTitulo || 'Auditoria';
+  const data = new Date().toLocaleDateString('pt-BR');
+  const dif = r.resumo?.distribuicaoDificuldade || { Fácil:0, Média:0, Difícil:0 };
+  const total = Object.values(dif).reduce((a,b)=>a+b,0)||1;
+  const perfis = (r.questoes||[]).reduce((acc,q)=>{ acc[q.perfilEnem]=(acc[q.perfilEnem]||0)+1; return acc; },{});
+  const difColors = { Fácil:'#34C97B', Média:'#F5C842', Difícil:'#F26B6B' };
+  const perfilColors = { Excelente:'#34C97B', Adequado:'#4F6EF7', 'Parcialmente adequado':'#F5C842', Inadequado:'#F26B6B' };
+
+  // Cobertura
+  const cobAvaliados = (r.coberturaConteudos||[]).filter(c=>c.avaliado);
+  const cobNaoAvaliados = (r.coberturaConteudos||[]).filter(c=>!c.avaliado);
+
+  const conteudo = `<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<title>Auditoria — ${titulo}</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Segoe UI',Arial,sans-serif;background:#fff;color:#1a1a2e;font-size:12px;padding:24px 32px}
+h1{font-size:20px;font-weight:800;margin-bottom:4px;color:#1a1a2e}
+.sub{font-size:12px;color:#666;margin-bottom:24px}
+.tag{font-size:9px;color:#4F6EF7;letter-spacing:2px;text-transform:uppercase;margin-bottom:6px}
+h2{font-size:13px;font-weight:700;margin:20px 0 10px;color:#1a1a2e;border-bottom:2px solid #4F6EF7;padding-bottom:5px;page-break-after:avoid}
+.indices{display:flex;gap:20px;margin-bottom:16px;flex-wrap:wrap}
+.idx{text-align:center;min-width:90px;padding:10px;background:#f8f9ff;border-radius:8px;border:1px solid #e0e4ff}
+.idx-num{font-size:24px;font-weight:800}
+.idx-label{font-size:10px;color:#666;margin-top:2px}
+.dif-row{display:flex;gap:10px;margin-bottom:12px}
+.dif-box{flex:1;border-radius:8px;padding:10px;text-align:center;border:1px solid #eee}
+.dif-n{font-size:20px;font-weight:800}
+.dif-l{font-size:10px;color:#666}
+.bar-row{display:flex;align-items:center;gap:8px;margin-bottom:4px}
+.bar-key{font-size:10px;color:#444;min-width:180px;text-align:right;padding-right:4px}
+.bar-track{flex:1;background:#eee;border-radius:3px;height:10px;overflow:hidden}
+.bar-fill{height:100%;border-radius:3px}
+.bar-val{font-size:10px;color:#888;min-width:20px}
+table{width:100%;border-collapse:collapse;margin-bottom:14px;font-size:11px;page-break-inside:auto}
+th{background:#f0f2ff;padding:6px 8px;text-align:left;font-size:10px;text-transform:uppercase;letter-spacing:.5px;color:#4F6EF7;border-bottom:2px solid #4F6EF7}
+td{padding:6px 8px;border-bottom:1px solid #f0f0f0;vertical-align:top;page-break-inside:avoid}
+tr:nth-child(even) td{background:#fafafa}
+tr{page-break-inside:avoid}
+.badge{font-size:9px;font-weight:700;padding:2px 6px;border-radius:10px;color:#fff}
+.issue-row{padding:6px 8px;border-radius:4px;margin-bottom:4px;border-left:3px solid;font-size:11px}
+.rec-row{padding:6px 10px;border-radius:4px;margin-bottom:4px;background:#f0f2ff;display:flex;gap:8px;font-size:11px}
+.rec-n{font-weight:700;color:#4F6EF7;min-width:18px}
+.lacuna{padding:5px 8px;background:#fff8e0;border-left:3px solid #F5C842;border-radius:3px;margin-bottom:3px;font-size:11px}
+.cobertura-row{display:flex;align-items:center;gap:8px;padding:4px 0;border-bottom:1px solid #f5f5f5;font-size:11px}
+.dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
+.footer{margin-top:24px;padding-top:10px;border-top:1px solid #eee;font-size:9px;color:#aaa;text-align:center}
+@media print{
+  body{padding:15px}
+  h2{page-break-after:avoid}
+  table{page-break-inside:auto}
+  tr{page-break-inside:avoid}
+  .no-break{page-break-inside:avoid}
+}
+</style>
+</head>
+<body>
+<div class="tag">Colégio Evolução — Sistema de Auditoria Pedagógica</div>
+<h1>${titulo}</h1>
+<p class="sub">Gerado em ${data} &nbsp;·&nbsp; ${r.resumo?.totalQuestoes||0} questões analisadas</p>
+
+<h2>Índices Gerais</h2>
+<div class="indices">
+  <div class="idx"><div class="idx-num" style="color:#4F6EF7">${r.resumo?.indiceQualidade||0}%</div><div class="idx-label">Qualidade Geral</div></div>
+  <div class="idx"><div class="idx-num" style="color:#34C97B">${r.resumo?.aderenciaEnem||0}%</div><div class="idx-label">Aderência ao ENEM</div></div>
+  <div class="idx"><div class="idx-num" style="color:#F5C842">${r.resumo?.coberturaCurricular||0}%</div><div class="idx-label">Cobertura Curricular</div></div>
+  <div class="idx"><div class="idx-num" style="color:#1a1a2e">${r.resumo?.totalQuestoes||0}</div><div class="idx-label">Total de Questões</div></div>
+</div>
+
+<h2>Distribuição por Dificuldade</h2>
+<div class="dif-row">
+  ${Object.entries(dif).map(([k,v2])=>`<div class="dif-box"><div class="dif-n" style="color:${difColors[k]||'#888'}">${v2}</div><div class="dif-l">${k} · ${Math.round((v2/total)*100)}%</div></div>`).join('')}
+</div>
+
+<h2>Perfil ENEM por Questão</h2>
+${['Excelente','Adequado','Parcialmente adequado','Inadequado'].map(k=>{
+  const vv=perfis[k]||0;
+  const mx=Math.max(...Object.values(perfis),1);
+  return `<div class="bar-row"><span class="bar-key">${k}</span><div class="bar-track"><div class="bar-fill" style="width:${(vv/mx)*100}%;background:${perfilColors[k]}"></div></div><span class="bar-val">${vv}</span></div>`;
+}).join('')}
+
+${(r.distribuicaoCapitulos||[]).length>0?`
+<h2>Questões por Capítulo</h2>
+${(()=>{const mx=Math.max(...r.distribuicaoCapitulos.map(d=>d.v),1);return r.distribuicaoCapitulos.map(d=>`<div class="bar-row"><span class="bar-key">${d.k}</span><div class="bar-track"><div class="bar-fill" style="width:${(d.v/mx)*100}%;background:#4F6EF7"></div></div><span class="bar-val">${d.v}</span></div>`).join('');})()}
+`:''}
+
+${(r.coberturaConteudos||[]).length>0?`
+<h2>Cobertura do Programa por Conteúdo</h2>
+${(r.coberturaConteudos||[]).map(c=>`
+<div class="cobertura-row">
+  <div class="dot" style="background:${c.avaliado?'#34C97B':'#F26B6B'}"></div>
+  <span style="color:#888;min-width:120px;font-size:10px">${c.componente||''}</span>
+  <span style="color:#4F6EF7;min-width:160px;font-size:10px">${c.capitulo||''}</span>
+  <span style="flex:1">${c.conteudo}</span>
+  <span style="font-weight:700;color:${c.avaliado?'#34C97B':'#F26B6B'};font-size:10px">${c.avaliado?'✓ Avaliado':'✗ Não avaliado'}</span>
+</div>`).join('')}
+`:''}
+
+<h2>Análise por Questão</h2>
+<table>
+<tr><th>Q</th><th>Capítulo</th><th>Competência</th><th>Habilidade</th><th>Dificuldade</th><th>Perfil ENEM</th><th>Justificativa ENEM</th><th>Gabarito</th></tr>
+${(r.questoes||[]).map(q=>`<tr>
+  <td style="font-weight:700;font-family:monospace">${q.numero||'—'}</td>
+  <td>${q.capitulo||'—'}</td>
+  <td>${q.competencia||'—'}</td>
+  <td>${q.habilidade||'—'}</td>
+  <td><span class="badge" style="background:${q.dificuldade==='Fácil'?'#34C97B':q.dificuldade==='Difícil'?'#F26B6B':'#F5C842'}">${q.dificuldade||'—'}</span></td>
+  <td style="color:${perfilColors[q.perfilEnem]||'#888'};font-weight:600;font-size:10px">${q.perfilEnem||'—'}</td>
+  <td style="font-size:10px;color:#555">${q.justificativaEnem||q.justificativa||'—'}</td>
+  <td style="font-family:monospace;font-weight:700">${q.gabarito||'—'}</td>
+</tr>`).join('')}
+</table>
+
+${(r.naoConformidades||[]).length>0?`
+<h2>Não Conformidades</h2>
+${r.naoConformidades.map(n=>{
+  const c=n.severidade==='erro'?'#F26B6B':n.severidade==='alerta'?'#F5C842':'#4F6EF7';
+  const bg=n.severidade==='erro'?'#fff0f0':n.severidade==='alerta'?'#fffbe0':'#f0f2ff';
+  return `<div class="issue-row" style="background:${bg};border-left-color:${c}"><span style="font-weight:700;font-family:monospace;color:${c};margin-right:6px">Q${n.questao}</span><span style="font-weight:600;text-transform:uppercase;font-size:10px;color:${c};margin-right:4px">${n.tipo} ·</span>${n.mensagem}</div>`;
+}).join('')}
+`:''}
+
+${(r.lacunas||[]).length>0?`
+<h2>Lacunas Identificadas</h2>
+${r.lacunas.map(l=>`<div class="lacuna">• ${l}</div>`).join('')}
+`:''}
+
+<h2>Recomendações</h2>
+${(r.recomendacoes||[]).map((rec,i)=>`<div class="rec-row"><span class="rec-n">${i+1}</span><span>${rec}</span></div>`).join('')}
+
+<div class="footer">Colégio Evolução · Sistema de Auditoria Pedagógica · ${data}</div>
+</body></html>`;
+
+  // Abre popup e imprime
+  try {
+    const popup = window.open('', '_blank', 'width=900,height=700');
+    if (!popup) throw new Error('popup bloqueado');
+    popup.document.write(conteudo);
+    popup.document.close();
+    popup.onload = function() {
+      setTimeout(() => { popup.focus(); popup.print(); }, 800);
+    };
+    // Fallback se onload não disparar
+    setTimeout(() => {
+      try { popup.focus(); popup.print(); } catch(e) {}
+    }, 2000);
+  } catch(e) {
+    // Fallback: download do HTML
+    const blob = new Blob([conteudo], { type: 'text/html;charset=utf-8' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `auditoria-${titulo.replace(/[^a-zA-Z0-9]/g,'-')}.html`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    setTimeout(() => URL.revokeObjectURL(url), 5000);
+    alert('Relatório baixado! Abra o arquivo no navegador e pressione Ctrl+P para salvar como PDF.');
+  }
+}
+
+function novaAuditoria() {
+  ['prova1','prova2','prova3','gabarito','programa','objetivos'].forEach(k=>{
+    files[k]=null;
+    const drop = document.getElementById('drop-'+k);
+    if (drop) drop.classList.remove('has-file');
+    const icon = document.getElementById('icon-'+k);
+    if (icon) icon.textContent = {prova1:'📄',prova2:'📄',prova3:'📄',gabarito:'🔑',programa:'📋',objetivos:'🎯'}[k];
+    const lbl = document.getElementById('label-'+k);
+    if (lbl) lbl.style.color='';
+    const hint = document.getElementById('hint-'+k);
+    if (hint) hint.textContent = ['prova2','prova3'].includes(k) ? 'opcional' : 'obrigatório';
+    const fi = document.getElementById('file-'+k);
+    if (fi) fi.value='';
+  });
+  ['meta-serie','meta-componente','meta-trimestre','meta-professor'].forEach(id=>{
+    document.getElementById(id).value='';
+  });
+  checkAllFiles();
+  showScreen('screen-upload');
+}
+</script>
+</body>
+</html>
