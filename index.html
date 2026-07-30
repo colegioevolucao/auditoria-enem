@@ -594,11 +594,20 @@ REGRAS OBRIGATÓRIAS:
 2. "conteudo" deve ser copiado EXATAMENTE da LISTA DE CONTEÚDOS. Nunca invente.
 3. Associe cada questão ao componente e capítulo CORRETO com base no conteúdo da questão.
 4. Não misture conteúdos de componentes diferentes (ex: não associe questão de Literatura a capítulo de Arte).
+5. "modeloPrincipal" deve ser escolhido a partir da LISTA DE MODELOS informada no system prompt. "modelosSecundarios" é opcional (0 a 2 itens).
+6. "perfilQuestao" pode conter mais de um item (ex: ["ENEM","SAS"]) quando a questão se assemelha a mais de uma avaliação.
+7. Preencha os campos qualitativos (nivelBloom, complexidadeCognitiva, grauContextualizacao, qualidadeDistratores, potencialDiscriminativo) de forma breve — poucas palavras, não parágrafos.
 
 JSON compacto sem markdown:
-{"questoes":[{"numero":1,"competencia":"C1","habilidade":"H01","capitulo":"TEXTO EXATO DO CAPÍTULO","conteudo":"TEXTO EXATO DO CONTEÚDO","objetivo":"obj","gabarito":"A","dificuldade":"Média","perfilEnem":"Adequado","justificativaEnem":"1-2 frases explicando aderência ao ENEM","justificativa":"1 frase de análise pedagógica","problemas":[]}]}`
+{"questoes":[{"numero":1,"competencia":"C1","habilidade":"H01","capitulo":"TEXTO EXATO DO CAPÍTULO","conteudo":"TEXTO EXATO DO CONTEÚDO","objetivo":"obj","gabarito":"A","dificuldade":"Média","perfilEnem":"Adequado","justificativaEnem":"1-2 frases explicando aderência ao ENEM","justificativa":"1 frase de análise pedagógica","problemas":[],"modeloPrincipal":"Contextualizada","modelosSecundarios":[],"intencaoDidatica":"1 frase sobre a intenção pedagógica","competenciasDesenvolvidas":["interpretação","análise"],"nivelBloom":"Analisar","complexidadeCognitiva":"Média","grauContextualizacao":"Alto","qualidadeDistratores":"breve avaliação dos distratores","potencialDiscriminativo":"Médio","perfilQuestao":["ENEM"],"adequacaoAltoDesempenho":"Adequada","limitacoes":[],"recomendacoesQuestao":["1 recomendação específica ou elogio, se já for excelente"]}]}`
         }]
-      }], `Você é um auditor pedagógico do ENEM. Classifique cada questão seguindo RIGOROSAMENTE estes critérios objetivos:
+      }], `Você é um auditor pedagógico especializado em avaliações de alto desempenho.
+
+Sua função não é apenas identificar se uma questão segue o modelo ENEM. Sua função é realizar uma análise pedagógica completa da qualidade da questão, classificando-a segundo diferentes modelos de elaboração utilizados pelas principais avaliações brasileiras e internacionais (ENEM, Fuvest, Unicamp, ITA, IME, SAS, Bernoulli, Poliedro, PISA e escolas de alto desempenho).
+
+PRINCÍPIO ORIENTADOR: não avalie a questão apenas por sua semelhança com o ENEM. Utilize o ENEM como referência de excelência em competências e contextualização, mas reconheça que uma questão de alta qualidade pode seguir outros modelos pedagógicos. Identifique o modelo predominante, explique seus objetivos pedagógicos, avalie sua qualidade técnica e forneça recomendações fundamentadas para elevar sua capacidade de desenvolver competências, habilidades e raciocínio de alto nível — mantendo as características do modelo original da questão quando ele já for adequado.
+
+LISTA DE MODELOS possíveis para "modeloPrincipal" e "modelosSecundarios": Recordação, Conceitual, Aplicação Direta, Contextualizada, Interdisciplinar, Competência, Habilidade BNCC, Análise, Comparação, Associação, Julgamento, Asserção e Razão, Múltiplas Afirmações, Investigativa, Interpretação de Gráficos, Interpretação de Tabelas, Infográficos, Imagens, Charges, Resolução de Problemas, Estudo de Caso, Cenário Hipotético, Tomada de Decisão, Argumentação, Inferência, Generalização, Síntese, Avaliação Crítica, Discursiva Curta, Discursiva Longa.
 
 DIFICULDADE — use exatamente um destes critérios:
 - Fácil: exige apenas memorização ou reconhecimento direto de conceito
@@ -611,7 +620,15 @@ PERFIL ENEM — use exatamente um destes critérios:
 - Parcialmente adequado: tem algum contexto mas é predominantemente conceitual, com pouca exigência de interpretação
 - Inadequado: sem contexto real, puramente memorização ou definição, sem mobilização de habilidade ENEM
 
-Seja consistente. Aplique os mesmos critérios em todas as questões. Retorne apenas JSON válido e compacto.`, 6000);
+NÍVEL DE BLOOM — classifique em exatamente um: Lembrar, Compreender, Aplicar, Analisar, Avaliar, Criar.
+
+COMPLEXIDADE COGNITIVA — Muito baixa, Baixa, Média, Alta ou Muito alta, considerando carga cognitiva, integração de conceitos, leitura exigida, abstração e número de etapas. É uma dimensão diferente do campo "dificuldade".
+
+GRAU DE CONTEXTUALIZAÇÃO — Muito baixo, Baixo, Médio, Alto ou Muito alto.
+
+POTENCIAL DISCRIMINATIVO — Baixo, Médio ou Alto: a questão diferencia aluno que decorou, aluno que compreendeu e aluno de excelência?
+
+Seja consistente. Aplique os mesmos critérios em todas as questões. Retorne apenas JSON válido e compacto.`, 7000);
 
       let auditadas;
       try {
@@ -647,6 +664,20 @@ Seja consistente. Aplique os mesmos critérios em todas as questões. Retorne ap
           justificativaEnem: (q.justificativaEnem ?? q.justificativa_enem ?? q.enem_justification ?? '—').trim(),
           justificativa: (q.justificativa ?? q.justification ?? q.reasoning ?? '—').trim(),
           problemas: Array.isArray(q.problemas) ? q.problemas : (q.problems || q.issues || []),
+          // ── DNA Pedagógico (novos campos) ──
+          modeloPrincipal: (q.modeloPrincipal ?? q.modelo_principal ?? '—').trim(),
+          modelosSecundarios: Array.isArray(q.modelosSecundarios) ? q.modelosSecundarios : (q.modelos_secundarios || []),
+          intencaoDidatica: (q.intencaoDidatica ?? q.intencao_didatica ?? '—').trim(),
+          competenciasDesenvolvidas: Array.isArray(q.competenciasDesenvolvidas) ? q.competenciasDesenvolvidas : (q.competencias_desenvolvidas || []),
+          nivelBloom: (q.nivelBloom ?? q.nivel_bloom ?? '—').trim(),
+          complexidadeCognitiva: (q.complexidadeCognitiva ?? q.complexidade_cognitiva ?? '—').trim(),
+          grauContextualizacao: (q.grauContextualizacao ?? q.grau_contextualizacao ?? '—').trim(),
+          qualidadeDistratores: (q.qualidadeDistratores ?? q.qualidade_distratores ?? '—').trim(),
+          potencialDiscriminativo: (q.potencialDiscriminativo ?? q.potencial_discriminativo ?? '—').trim(),
+          perfilQuestao: Array.isArray(q.perfilQuestao) ? q.perfilQuestao : (q.perfil_questao || []),
+          adequacaoAltoDesempenho: (q.adequacaoAltoDesempenho ?? q.adequacao_alto_desempenho ?? '—').trim(),
+          limitacoes: Array.isArray(q.limitacoes) ? q.limitacoes : [],
+          recomendacoesQuestao: Array.isArray(q.recomendacoesQuestao) ? q.recomendacoesQuestao : (q.recomendacoes_questao || []),
         };
       });
       if (auditadas.length === 0) throw new Error(`Lote ${numLote} não retornou dados. Tente novamente.`);
@@ -669,6 +700,10 @@ Seja consistente. Aplique os mesmos critérios em todas as questões. Retorne ap
     const capMap  = todasQuestoes.reduce((a,q)=>{ a[q.capitulo]=(a[q.capitulo]||0)+1; return a; },{});
     const habMap  = todasQuestoes.reduce((a,q)=>{ const h=q.habilidade?.split('—')[0]?.trim()||q.habilidade; a[h]=(a[h]||0)+1; return a; },{});
     const compMap = todasQuestoes.reduce((a,q)=>{ a[q.competencia]=(a[q.competencia]||0)+1; return a; },{});
+    // ── Mapas agregados do DNA Pedagógico ──
+    const modeloMap = todasQuestoes.reduce((a,q)=>{ if(q.modeloPrincipal && q.modeloPrincipal!=='—'){ a[q.modeloPrincipal]=(a[q.modeloPrincipal]||0)+1; } return a; },{});
+    const bloomMap  = todasQuestoes.reduce((a,q)=>{ if(q.nivelBloom && q.nivelBloom!=='—'){ a[q.nivelBloom]=(a[q.nivelBloom]||0)+1; } return a; },{});
+    const perfilQuestaoMap = todasQuestoes.reduce((a,q)=>{ (q.perfilQuestao||[]).forEach(p=>{ a[p]=(a[p]||0)+1; }); return a; },{});
 
     // Mapa conteúdo → capítulo via questões auditadas
     const capPorConteudo = {};
@@ -710,11 +745,23 @@ Seja consistente. Aplique os mesmos critérios em todas as questões. Retorne ap
       ...(inadequado>0?[`${inadequado} questão(ões) Inadequado ao ENEM — revisar estrutura e contextualização`]:[]),
     ];
 
+    // ── Indicadores agregados do DNA Pedagógico para as recomendações ──
+    const baixoBloom = todasQuestoes.filter(q => ['Lembrar','Compreender'].includes(q.nivelBloom)).length;
+    const baixaDiscriminacao = todasQuestoes.filter(q => q.potencialDiscriminativo === 'Baixo').length;
+    const semContextualizacao = todasQuestoes.filter(q => ['Muito baixo','Baixo'].includes(q.grauContextualizacao)).length;
+    const distratoresFracos = todasQuestoes.filter(q => /fraco|fácil|elimin[aá]ve|pouco plaus/i.test(q.qualidadeDistratores||'')).length;
+    const recomendacoesQuestaoAgregadas = todasQuestoes.flatMap(q => (q.recomendacoesQuestao||[]).map(r => `Q${q.numero}: ${r}`));
+
     const recomendacoes = [
       ...naoConf.filter(n=>n.severidade==='erro').map(n=>`Q${n.questao}: ${n.mensagem}`),
       ...(cobertura<70?['Ampliar a cobertura de conteúdos do programa na prova']:[]),
       ...(aderenciaEnem<60?['Revisar questões para maior aderência ao modelo ENEM']:[]),
       ...(((dif['Fácil']||0)/total)>0.5?['Aumentar o nível de dificuldade médio da prova']:[]),
+      ...(baixoBloom/total > 0.4 ? [`${baixoBloom} questões estão nos níveis de Bloom "Lembrar/Compreender" — considerar elevar para "Aplicar/Analisar" em parte delas`] : []),
+      ...(baixaDiscriminacao/total > 0.3 ? [`${baixaDiscriminacao} questões têm baixo potencial discriminativo — revisar distratores`] : []),
+      ...(semContextualizacao/total > 0.3 ? [`${semContextualizacao} questões têm contextualização baixa ou nula — considerar situações reais/atuais`] : []),
+      ...(distratoresFracos/total > 0.3 ? [`${distratoresFracos} questões têm distratores fracos ou facilmente elimináveis — revisar alternativas incorretas`] : []),
+      ...recomendacoesQuestaoAgregadas,
     ];
 
     const resultado = {
@@ -726,6 +773,9 @@ Seja consistente. Aplique os mesmos critérios em todas as questões. Retorne ap
       distribuicaoCapitulos: Object.entries(capMap).map(([k,v2])=>({k,v:v2})).filter(d=>d.k&&d.k!=='—'),
       distribuicaoHabilidades: Object.entries(habMap).map(([k,v2])=>({k,v:v2})).sort((a,b)=>b.v-a.v).slice(0,10),
       distribuicaoCompetencias: Object.entries(compMap).map(([k,v2])=>({k,v:v2})),
+      distribuicaoModelos: Object.entries(modeloMap).map(([k,v2])=>({k,v:v2})).sort((a,b)=>b.v-a.v),
+      distribuicaoBloom: Object.entries(bloomMap).map(([k,v2])=>({k,v:v2})),
+      distribuicaoPerfilQuestao: Object.entries(perfilQuestaoMap).map(([k,v2])=>({k,v:v2})).sort((a,b)=>b.v-a.v),
       lacunas: lacunas.length>0?lacunas:['Nenhuma lacuna crítica identificada'],
       recomendacoes: recomendacoes.length>0?recomendacoes:['A prova apresenta boa qualidade geral.'],
     };
@@ -823,6 +873,27 @@ function renderPainel(r) {
       )}
     </div>
 
+    ${r.distribuicaoModelos?.length>0?`
+    <div class="panel-card">
+      <p class="panel-title">Modelo Predominante das Questões</p>
+      ${barChart(r.distribuicaoModelos)}
+    </div>`:''}
+
+    ${r.distribuicaoBloom?.length>0?`
+    <div class="panel-card">
+      <p class="panel-title">Distribuição por Nível de Bloom</p>
+      ${barChart(
+        ['Lembrar','Compreender','Aplicar','Analisar','Avaliar','Criar'].map(k=>({k,v:(r.distribuicaoBloom.find(d=>d.k===k)||{v:0}).v})).filter(d=>d.v>0),
+        d=>({'Lembrar':'var(--red)','Compreender':'var(--yellow)','Aplicar':'var(--accent)','Analisar':'var(--accent)','Avaliar':'var(--green)','Criar':'var(--green)'}[d.k])
+      )}
+    </div>`:''}
+
+    ${r.distribuicaoPerfilQuestao?.length>0?`
+    <div class="panel-card">
+      <p class="panel-title">Perfil Comparativo das Questões (outras avaliações)</p>
+      ${barChart(r.distribuicaoPerfilQuestao)}
+    </div>`:''}
+
     ${r.distribuicaoCapitulos?.length>0?`
     <div class="panel-card">
       <p class="panel-title">Questões por Capítulo</p>
@@ -905,9 +976,65 @@ function renderQuestoes(questoes) {
                     <div style="font-size:12px;color:var(--red)">${q.problemas?.length>0?q.problemas.map(p=>`• ${p}`).join('<br>'):'Nenhum'}</div>
                   </div>
                 </div>
-                <div style="background:${ {'Excelente':'var(--green-soft)','Adequado':'var(--accent-soft)','Parcialmente adequado':'var(--yellow-soft)','Inadequado':'var(--red-soft)'}[q.perfilEnem]||'var(--surface)' };border-radius:8px;padding:12px">
+                <div style="background:${ {'Excelente':'var(--green-soft)','Adequado':'var(--accent-soft)','Parcialmente adequado':'var(--yellow-soft)','Inadequado':'var(--red-soft)'}[q.perfilEnem]||'var(--surface)' };border-radius:8px;padding:12px;margin-bottom:12px">
                   <div style="font-size:10px;font-weight:700;color:${perfil[q.perfilEnem]||'var(--text3)'};text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px">Justificativa — Aderência ao ENEM</div>
                   <div style="font-size:12px;color:var(--text2);line-height:1.6">${q.justificativaEnem||q.justificativa||'—'}</div>
+                </div>
+
+                <div style="border-top:1px dashed var(--border);padding-top:12px;margin-top:4px">
+                  <div style="font-size:10px;font-weight:700;color:var(--accent);text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px">DNA Pedagógico da Questão</div>
+                  <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+                    <div>
+                      <div style="font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:.5px;margin-bottom:2px">Modelo</div>
+                      <div style="font-size:12px;color:var(--text)">${q.modeloPrincipal||'—'}${q.modelosSecundarios?.length?` <span style="color:var(--text3)">(+ ${q.modelosSecundarios.join(', ')})</span>`:''}</div>
+                    </div>
+                    <div>
+                      <div style="font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:.5px;margin-bottom:2px">Perfil comparativo</div>
+                      <div style="font-size:12px;color:var(--text)">${q.perfilQuestao?.length?q.perfilQuestao.join(', '):'—'}</div>
+                    </div>
+                    <div>
+                      <div style="font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:.5px;margin-bottom:2px">Intenção didática</div>
+                      <div style="font-size:12px;color:var(--text)">${q.intencaoDidatica||'—'}</div>
+                    </div>
+                    <div>
+                      <div style="font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:.5px;margin-bottom:2px">Competências desenvolvidas</div>
+                      <div style="font-size:12px;color:var(--text)">${q.competenciasDesenvolvidas?.length?q.competenciasDesenvolvidas.join(', '):'—'}</div>
+                    </div>
+                    <div>
+                      <div style="font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:.5px;margin-bottom:2px">Nível de Bloom</div>
+                      <div style="font-size:12px;color:var(--text)">${q.nivelBloom||'—'}</div>
+                    </div>
+                    <div>
+                      <div style="font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:.5px;margin-bottom:2px">Complexidade cognitiva</div>
+                      <div style="font-size:12px;color:var(--text)">${q.complexidadeCognitiva||'—'}</div>
+                    </div>
+                    <div>
+                      <div style="font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:.5px;margin-bottom:2px">Contextualização</div>
+                      <div style="font-size:12px;color:var(--text)">${q.grauContextualizacao||'—'}</div>
+                    </div>
+                    <div>
+                      <div style="font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:.5px;margin-bottom:2px">Potencial discriminativo</div>
+                      <div style="font-size:12px;color:var(--text)">${q.potencialDiscriminativo||'—'}</div>
+                    </div>
+                    <div style="grid-column:1/-1">
+                      <div style="font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:.5px;margin-bottom:2px">Qualidade dos distratores</div>
+                      <div style="font-size:12px;color:var(--text)">${q.qualidadeDistratores||'—'}</div>
+                    </div>
+                    <div style="grid-column:1/-1">
+                      <div style="font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:.5px;margin-bottom:2px">Adequação para alto desempenho</div>
+                      <div style="font-size:12px;color:var(--text)">${q.adequacaoAltoDesempenho||'—'}</div>
+                    </div>
+                    ${q.limitacoes?.length?`
+                    <div style="grid-column:1/-1">
+                      <div style="font-size:10px;color:var(--red);text-transform:uppercase;letter-spacing:.5px;margin-bottom:2px">Limitações</div>
+                      <div style="font-size:12px;color:var(--red)">${q.limitacoes.map(l=>`• ${l}`).join('<br>')}</div>
+                    </div>`:''}
+                    ${q.recomendacoesQuestao?.length?`
+                    <div style="grid-column:1/-1">
+                      <div style="font-size:10px;color:var(--green);text-transform:uppercase;letter-spacing:.5px;margin-bottom:2px">Recomendações desta questão</div>
+                      <div style="font-size:12px;color:var(--text2)">${q.recomendacoesQuestao.map(rc=>`• ${rc}`).join('<br>')}</div>
+                    </div>`:''}
+                  </div>
                 </div>
               </div>
             </td>
@@ -1095,6 +1222,16 @@ ${['Excelente','Adequado','Parcialmente adequado','Inadequado'].map(k=>{
   return `<div class="bar-row"><span class="bar-key">${k}</span><div class="bar-track"><div class="bar-fill" style="width:${(vv/mx)*100}%;background:${perfilColors[k]}"></div></div><span class="bar-val">${vv}</span></div>`;
 }).join('')}
 
+${(r.distribuicaoModelos||[]).length>0?`
+<h2>Modelo Predominante das Questões</h2>
+${(()=>{const mx=Math.max(...r.distribuicaoModelos.map(d=>d.v),1);return r.distribuicaoModelos.map(d=>`<div class="bar-row"><span class="bar-key">${d.k}</span><div class="bar-track"><div class="bar-fill" style="width:${(d.v/mx)*100}%;background:#4F6EF7"></div></div><span class="bar-val">${d.v}</span></div>`).join('');})()}
+`:''}
+
+${(r.distribuicaoBloom||[]).length>0?`
+<h2>Distribuição por Nível de Bloom</h2>
+${(()=>{const mx=Math.max(...r.distribuicaoBloom.map(d=>d.v),1);return r.distribuicaoBloom.map(d=>`<div class="bar-row"><span class="bar-key">${d.k}</span><div class="bar-track"><div class="bar-fill" style="width:${(d.v/mx)*100}%;background:#34C97B"></div></div><span class="bar-val">${d.v}</span></div>`).join('');})()}
+`:''}
+
 ${(r.distribuicaoCapitulos||[]).length>0?`
 <h2>Questões por Capítulo</h2>
 ${(()=>{const mx=Math.max(...r.distribuicaoCapitulos.map(d=>d.v),1);return r.distribuicaoCapitulos.map(d=>`<div class="bar-row"><span class="bar-key">${d.k}</span><div class="bar-track"><div class="bar-fill" style="width:${(d.v/mx)*100}%;background:#4F6EF7"></div></div><span class="bar-val">${d.v}</span></div>`).join('');})()}
@@ -1114,15 +1251,16 @@ ${(r.coberturaConteudos||[]).map(c=>`
 
 <h2>Análise por Questão</h2>
 <table>
-<tr><th>Q</th><th>Capítulo</th><th>Competência</th><th>Habilidade</th><th>Dificuldade</th><th>Perfil ENEM</th><th>Justificativa ENEM</th><th>Gabarito</th></tr>
+<tr><th>Q</th><th>Capítulo</th><th>Competência</th><th>Habilidade</th><th>Modelo</th><th>Nível Bloom</th><th>Dificuldade</th><th>Perfil ENEM</th><th>Gabarito</th></tr>
 ${(r.questoes||[]).map(q=>`<tr>
   <td style="font-weight:700;font-family:monospace">${q.numero||'—'}</td>
   <td>${q.capitulo||'—'}</td>
   <td>${q.competencia||'—'}</td>
   <td>${q.habilidade||'—'}</td>
+  <td style="font-size:10px">${q.modeloPrincipal||'—'}</td>
+  <td style="font-size:10px">${q.nivelBloom||'—'}</td>
   <td><span class="badge" style="background:${q.dificuldade==='Fácil'?'#34C97B':q.dificuldade==='Difícil'?'#F26B6B':'#F5C842'}">${q.dificuldade||'—'}</span></td>
   <td style="color:${perfilColors[q.perfilEnem]||'#888'};font-weight:600;font-size:10px">${q.perfilEnem||'—'}</td>
-  <td style="font-size:10px;color:#555">${q.justificativaEnem||q.justificativa||'—'}</td>
   <td style="font-family:monospace;font-weight:700">${q.gabarito||'—'}</td>
 </tr>`).join('')}
 </table>
