@@ -1055,12 +1055,16 @@ ${JSON.stringify(comProblemas.map(q => ({ numero: q.numero, problemas: q.problem
     const conteudosNaoAval = coberturaConteudos.filter(c=>!c.avaliado).map(c=>c.conteudo);
 
     const naoConf = todasQuestoes.flatMap(q =>
-      (q.problemas||[]).map(p => ({
-        questao: q.numero,
-        tipo: p.toLowerCase().includes('gabarito')?'Gabarito':p.toLowerCase().includes('alternativ')?'Alternativas':p.toLowerCase().includes('context')?'Contextualização':'Estrutura',
-        mensagem: p,
-        severidade: (p.toLowerCase().includes('erro')||p.toLowerCase().includes('ausente')||p.toLowerCase().includes('incorret'))?'erro':'alerta'
-      }))
+      (q.problemas||[]).map(p => {
+        const txt = typeof p === 'string' ? p : (p?.descricao || '');
+        const ev  = typeof p === 'object' ? (p?.evidencia || '') : '';
+        return {
+          questao: q.numero,
+          tipo: txt.toLowerCase().includes('gabarito')?'Gabarito':txt.toLowerCase().includes('alternativ')?'Alternativas':txt.toLowerCase().includes('context')?'Contextualização':'Estrutura',
+          mensagem: txt + (ev ? ` — evidência: "${ev}"` : ''),
+          severidade: (txt.toLowerCase().includes('erro')||txt.toLowerCase().includes('ausente')||txt.toLowerCase().includes('incorret'))?'erro':'alerta'
+        };
+      })
     );
 
     const lacunas = [
@@ -1321,7 +1325,7 @@ function renderQuestoes(questoes) {
                   </div>
                   <div>
                     <div style="font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:.5px;margin-bottom:3px">Pontos de atenção</div>
-                    <div style="font-size:12px;color:var(--red)">${q.problemas?.length>0?q.problemas.map(p=>`• ${p}`).join('<br>'):'Nenhum'}</div>
+                    <div style="font-size:12px;color:var(--red)">${q.problemas?.length>0?q.problemas.map(p=>{ const txt=typeof p==='string'?p:(p?.descricao||''); const ev=typeof p==='object'?(p?.evidencia||''):''; return `• ${txt}${ev?` <span style="color:var(--text3);font-style:italic">(evidência: "${ev}")</span>`:''}`;}).join('<br>'):'Nenhum'}</div>
                   </div>
                 </div>
                 <div style="background:${ {'Excelente':'var(--green-soft)','Adequado':'var(--accent-soft)','Parcialmente adequado':'var(--yellow-soft)','Inadequado':'var(--red-soft)'}[q.perfilEnem]||'var(--surface)' };border-radius:8px;padding:12px;margin-bottom:12px">
