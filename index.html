@@ -196,6 +196,10 @@
   .lacunas-box{background:var(--yellow-soft);border:1px solid #D98A2B40;border-radius:18px;padding:24px}
   .lacunas-title{font-size:12px;color:var(--yellow);text-transform:uppercase;letter-spacing:1px;margin-bottom:12px;font-weight:700}
   .lacuna-item{font-size:13px;color:var(--text2);margin-bottom:6px}
+  .extras-box{background:var(--accent-soft);border:1px solid #D0692D40;border-radius:18px;padding:24px}
+  .extras-title{font-size:12px;color:var(--accent-deep);text-transform:uppercase;letter-spacing:1px;margin-bottom:12px;font-weight:700}
+  .extra-item{font-size:13px;color:var(--text2);margin-bottom:8px;line-height:1.5}
+  .extra-item b{color:var(--navy);font-family:var(--font-mono)}
   .q-body{border-top:1px solid var(--border);padding:14px 16px;display:none;grid-template-columns:1fr 1fr;gap:12px}
   .q-body.open{display:grid}
   .badge{font-size:10px;font-weight:700;color:#fff;padding:3px 10px;border-radius:20px}
@@ -843,10 +847,10 @@ As páginas originais da prova referentes a este lote estão anexadas acima. Use
 PROGRAMA DA AVALIAÇÃO (estrutura completa):
 ${programaHierarquico}
 
-LISTA EXATA DE CAPÍTULOS (copie um destes no campo "capitulo"):
+LISTA EXATA DE CAPÍTULOS (copie um destes no campo "capitulo" quando a questão pertencer ao programa):
 ${capitulosList}
 
-LISTA EXATA DE CONTEÚDOS (copie um destes no campo "conteudo"):
+LISTA EXATA DE CONTEÚDOS (copie um destes no campo "conteudo" quando a questão pertencer ao programa):
 ${conteudosList}
 
 OBJETIVOS: ${contexto.objetivos?.join(', ')}
@@ -856,18 +860,19 @@ ${lote.map(q => `Q${q.numero}: ${q.enunciado} | gabarito:${q.gabarito} | temCont
 
 REGRAS OBRIGATÓRIAS:
 1. "numero" deve ser copiado EXATAMENTE do número Q indicado acima. Nunca renumere nem reinicie a contagem.
-2. "capitulo" deve ser copiado EXATAMENTE da LISTA DE CAPÍTULOS. Nunca invente.
-3. "conteudo" deve ser copiado EXATAMENTE da LISTA DE CONTEÚDOS. Nunca invente.
-4. Associe cada questão ao componente e capítulo CORRETO com base no conteúdo da questão.
-5. Não misture conteúdos de componentes diferentes (ex: não associe questão de Literatura a capítulo de Arte).
-6. "modeloPrincipal" deve ser escolhido a partir da LISTA DE MODELOS informada no system prompt. "modelosSecundarios" é opcional (0 a 2 itens).
-7. "funcaoPedagogica" deve ser exatamente um dos cinco valores: "Domínio conceitual", "Raciocínio e análise", "Aplicação contextualizada", "Resolução de problema", "Avaliação e julgamento". Escolha com base no que a questão predominantemente exige do aluno, independente do formato ou modelo de elaboração.
-8. Preencha os campos qualitativos (nivelBloom, complexidadeCognitiva, grauContextualizacao, qualidadeDistratores, potencialDiscriminativo) de forma breve — poucas palavras, não parágrafos.
-9. REGRA DE CITAÇÃO — para cada item em "problemas": antes de registrar qualquer problema, localize o trecho exato no PDF/imagem anexado que sustenta a alegação e inclua-o entre aspas no campo "evidencia". Se não encontrar evidência no documento original, NÃO registre o problema — omita-o.
-10. "sugestaoMelhoria" deve conter UMA sugestão concreta e acionável de como elevar essa questão ao padrão de excelência de uma escola de alto desempenho, tendo o ENEM como referência mas sem obrigar o formato ENEM. Se a questão já for excelente, explique por quê e sugira apenas refinamentos opcionais. A sugestão deve ser específica para o conteúdo desta questão — nunca genérica.
+2. Antes de preencher "capitulo"/"conteudo", avalie honestamente se o assunto real da questão corresponde a algum item da LISTA DE CAPÍTULOS/CONTEÚDOS acima.
+   - Se corresponder com confiança: "capitulo" e "conteudo" devem ser copiados EXATAMENTE da lista. Nunca invente um item que não está na lista.
+   - Se NÃO corresponder a nenhum item com confiança — ou seja, o professor cobrou na prova um assunto que não consta no programa declarado — defina "foraDoPrograma": true, deixe "capitulo" e "conteudo" como null, e preencha "assuntoReal" com o assunto que a questão realmente aborda (com suas palavras, baseado no PDF) e "evidenciaForaDoPrograma" com um trecho literal do enunciado (máx 30 palavras) que comprove esse assunto.
+   - Nunca force o encaixe em um capítulo só para preencher o campo — isso é o principal erro a evitar.
+3. Associe cada questão ao componente e capítulo CORRETO com base no conteúdo da questão. Não misture conteúdos de componentes diferentes.
+4. "modeloPrincipal" deve ser escolhido a partir da LISTA DE MODELOS informada no system prompt. "modelosSecundarios" é opcional (0 a 2 itens).
+5. "funcaoPedagogica" deve ser exatamente um dos cinco valores: "Domínio conceitual", "Raciocínio e análise", "Aplicação contextualizada", "Resolução de problema", "Avaliação e julgamento". Escolha com base no que a questão predominantemente exige do aluno, independente do formato ou modelo de elaboração.
+6. Preencha os campos qualitativos (nivelBloom, complexidadeCognitiva, grauContextualizacao, qualidadeDistratores, potencialDiscriminativo) de forma breve — poucas palavras, não parágrafos.
+7. REGRA DE CITAÇÃO — para cada item em "problemas": antes de registrar qualquer problema, localize o trecho exato no PDF/imagem anexado que sustenta a alegação e inclua-o entre aspas no campo "evidencia". Se não encontrar evidência no documento original, NÃO registre o problema — omita-o.
+8. "sugestaoMelhoria" deve conter UMA sugestão concreta e acionável de como elevar essa questão ao padrão de excelência de uma escola de alto desempenho, tendo o ENEM como referência mas sem obrigar o formato ENEM. Se a questão já for excelente, explique por quê e sugira apenas refinamentos opcionais. A sugestão deve ser específica para o conteúdo desta questão — nunca genérica.
 
 JSON compacto sem markdown:
-{"questoes":[{"numero":1,"competencia":"C1","habilidade":"H01","capitulo":"TEXTO EXATO DO CAPÍTULO","conteudo":"TEXTO EXATO DO CONTEÚDO","objetivo":"obj","gabarito":"A","dificuldade":"Média","perfilEnem":"Adequado","justificativaEnem":"1-2 frases explicando aderência ao ENEM","justificativa":"1 frase de análise pedagógica","problemas":[{"descricao":"descrição do problema","evidencia":"trecho literal do PDF que sustenta essa alegação (máx 40 palavras)"}],"modeloPrincipal":"Contextualizada","modelosSecundarios":[],"intencaoDidatica":"1 frase sobre a intenção pedagógica","competenciasDesenvolvidas":["interpretação","análise"],"nivelBloom":"Analisar","complexidadeCognitiva":"Média","grauContextualizacao":"Alto","qualidadeDistratores":"breve avaliação dos distratores","potencialDiscriminativo":"Médio","funcaoPedagogica":"Aplicação contextualizada","adequacaoAltoDesempenho":"Adequada","limitacoes":[],"recomendacoesQuestao":["1 recomendação específica ou elogio"],"sugestaoMelhoria":"sugestão concreta e específica para elevar esta questão ao padrão de excelência"}]}`
+{"questoes":[{"numero":1,"competencia":"C1","habilidade":"H01","capitulo":"TEXTO EXATO DO CAPÍTULO ou null","conteudo":"TEXTO EXATO DO CONTEÚDO ou null","foraDoPrograma":false,"assuntoReal":"","evidenciaForaDoPrograma":"","objetivo":"obj","gabarito":"A","dificuldade":"Média","perfilEnem":"Adequado","justificativaEnem":"1-2 frases explicando aderência ao ENEM","justificativa":"1 frase de análise pedagógica","problemas":[{"descricao":"descrição do problema","evidencia":"trecho literal do PDF que sustenta essa alegação (máx 40 palavras)"}],"modeloPrincipal":"Contextualizada","modelosSecundarios":[],"intencaoDidatica":"1 frase sobre a intenção pedagógica","competenciasDesenvolvidas":["interpretação","análise"],"nivelBloom":"Analisar","complexidadeCognitiva":"Média","grauContextualizacao":"Alto","qualidadeDistratores":"breve avaliação dos distratores","potencialDiscriminativo":"Médio","funcaoPedagogica":"Aplicação contextualizada","adequacaoAltoDesempenho":"Adequada","limitacoes":[],"recomendacoesQuestao":["1 recomendação específica ou elogio"],"sugestaoMelhoria":"sugestão concreta e específica para elevar esta questão ao padrão de excelência"}]}`
           }
         ]
       }], `Você é um curador pedagógico especializado em avaliações de alto desempenho.
@@ -875,6 +880,8 @@ JSON compacto sem markdown:
 FONTE DE VERDADE: quando páginas originais da prova (PDF ou imagem) forem anexadas, trate-as como a fonte definitiva. O resumo em texto é apenas um apoio — pode estar incompleto quanto a fórmulas, tabelas, valores ou figuras. Nunca reporte "dado não fornecido" ou "impossível validar gabarito" sem antes checar se o dado aparece no anexo original. Só registre uma não conformidade se ela for confirmada no documento original.
 
 Sua função não é apenas identificar se uma questão segue o modelo ENEM. Sua função é realizar uma análise pedagógica completa da qualidade da questão, classificando-a segundo diferentes modelos de elaboração utilizados pelas principais avaliações brasileiras e internacionais (ENEM, Fuvest, Unicamp, ITA, IME, SAS, Bernoulli, Poliedro, PISA e escolas de alto desempenho).
+
+HONESTIDADE SOBRE ADERÊNCIA AO PROGRAMA: você recebe uma lista fechada de capítulos/conteúdos que o professor declarou como programa da avaliação. É comum e esperado que ALGUMAS questões abordem assuntos que não constam nessa lista — isso não é um erro seu, é uma informação real sobre a prova que precisa ser reportada com precisão. Forçar o encaixe de uma questão em um capítulo que não tem relação real com ela (só para preencher o campo) é um erro grave de auditoria — pior do que admitir "esta questão está fora do programa declarado". Quando estiver em dúvida entre um encaixe forçado e marcar como fora do programa, prefira sempre marcar como fora do programa e explicar o motivo.
 
 PRINCÍPIO ORIENTADOR: não avalie a questão apenas por sua semelhança com o ENEM. Utilize o ENEM como referência de excelência em competências e contextualização, mas reconheça que uma questão de alta qualidade pode seguir outros modelos pedagógicos. Identifique o modelo predominante, explique seus objetivos pedagógicos, avalie sua qualidade técnica e forneça recomendações fundamentadas para elevar sua capacidade de desenvolver competências, habilidades e raciocínio de alto nível — mantendo as características do modelo original da questão quando ele já for adequado.
 
@@ -927,10 +934,17 @@ Seja consistente. Aplique os mesmos critérios em todas as questões. Retorne ap
       auditadas = (auditadas || []).map((q,i) => {
         const original = porNumero.get(q.numero) ?? porNumero.get(q.n) ?? lote[i];
         const numeroCorreto = original?.numero ?? lote[i]?.numero ?? (i+1);
-        const cap = (q.capitulo ?? q.chapter ?? '—').trim();
-        const cont = (q.conteudo ?? q.content ?? '—').trim();
-        const capValido = contexto.capitulos.includes(cap) ? cap : (contexto.capitulos.find(c => c.toLowerCase().includes(cap.toLowerCase())) || cap);
-        const contValido = contexto.conteudos.includes(cont) ? cont : (contexto.conteudos.find(c => c.toLowerCase().includes(cont.toLowerCase())) || cont);
+        const foraDoPrograma = !!q.foraDoPrograma;
+        let capValido, contValido;
+        if (foraDoPrograma) {
+          capValido = '— Fora do programa —';
+          contValido = (q.assuntoReal ?? q.assunto_real ?? '').trim() || 'Assunto não identificado no programa';
+        } else {
+          const cap = (q.capitulo ?? q.chapter ?? '—').trim();
+          const cont = (q.conteudo ?? q.content ?? '—').trim();
+          capValido = contexto.capitulos.includes(cap) ? cap : (contexto.capitulos.find(c => c.toLowerCase().includes(cap.toLowerCase())) || cap);
+          contValido = contexto.conteudos.includes(cont) ? cont : (contexto.conteudos.find(c => c.toLowerCase().includes(cont.toLowerCase())) || cont);
+        }
         // Normaliza o campo "problemas" — aceita tanto string simples quanto {descricao, evidencia}
         const rawProbs = Array.isArray(q.problemas) ? q.problemas : (q.problems || q.issues || []);
         const problemas = rawProbs.map(p => typeof p === 'string' ? { descricao: p, evidencia: '' } : p);
@@ -940,6 +954,8 @@ Seja consistente. Aplique os mesmos critérios em todas as questões. Retorne ap
           habilidade: (q.habilidade ?? q.skill ?? '—').trim(),
           capitulo: capValido,
           conteudo: contValido,
+          foraDoPrograma,
+          evidenciaForaDoPrograma: (q.evidenciaForaDoPrograma ?? q.evidencia_fora_do_programa ?? '').trim(),
           objetivo: (q.objetivo ?? q.objective ?? '—').trim(),
           gabarito: (q.gabarito ?? q.answer ?? original?.gabarito ?? '—').trim(),
           dificuldade: q.dificuldade ?? q.difficulty ?? 'Média',
@@ -998,7 +1014,7 @@ ${JSON.stringify(comProblemas.map(q => ({ numero: q.numero, problemas: q.problem
       const faltantes = lote.filter(q => !numerosRetornados.has(q.numero));
       if (faltantes.length > 0) {
         faltantes.forEach(f => auditadas.push({
-          numero: f.numero, competencia: '—', habilidade: '—', capitulo: '—', conteudo: '—', objetivo: '—',
+          numero: f.numero, competencia: '—', habilidade: '—', capitulo: '—', conteudo: '—', foraDoPrograma: false, evidenciaForaDoPrograma: '', objetivo: '—',
           gabarito: f.gabarito || '—', dificuldade: 'Média', perfilEnem: 'Adequado',
           justificativaEnem: '—', justificativa: '—',
           problemas: [{ descricao: 'Questão não retornada pela auditoria — revisar manualmente', evidencia: '' }],
@@ -1028,17 +1044,20 @@ ${JSON.stringify(comProblemas.map(q => ({ numero: q.numero, problemas: q.problem
     const aderenciaEnem   = Math.round(((excelente+adequado)/total)*100);
     const componente      = metaComponente;
 
-    const capMap  = todasQuestoes.reduce((a,q)=>{ a[q.capitulo]=(a[q.capitulo]||0)+1; return a; },{});
+    const capMap  = todasQuestoes.reduce((a,q)=>{ if(!q.foraDoPrograma) a[q.capitulo]=(a[q.capitulo]||0)+1; return a; },{});
     const habMap  = todasQuestoes.reduce((a,q)=>{ const h=q.habilidade?.split('—')[0]?.trim()||q.habilidade; a[h]=(a[h]||0)+1; return a; },{});
     const compMap = todasQuestoes.reduce((a,q)=>{ a[q.competencia]=(a[q.competencia]||0)+1; return a; },{});
     const modeloMap = todasQuestoes.reduce((a,q)=>{ if(q.modeloPrincipal && q.modeloPrincipal!=='—'){ a[q.modeloPrincipal]=(a[q.modeloPrincipal]||0)+1; } return a; },{});
     const bloomMap  = todasQuestoes.reduce((a,q)=>{ if(q.nivelBloom && q.nivelBloom!=='—'){ a[q.nivelBloom]=(a[q.nivelBloom]||0)+1; } return a; },{});
     const funcaoMap = todasQuestoes.reduce((a,q)=>{ const f=q.funcaoPedagogica||'—'; if(f!=='—'){ a[f]=a[f]||{v:0,qs:[]}; a[f].v++; a[f].qs.push(q.numero); } return a; },{});
 
-    const capPorConteudo = {};
-    todasQuestoes.forEach(q => { if (q.conteudo && q.capitulo) capPorConteudo[q.conteudo] = q.capitulo; });
+    // Questões cujo assunto real não corresponde a nenhum item do programa declarado
+    const questoesForaDoPrograma = todasQuestoes.filter(q => q.foraDoPrograma);
 
-    const conteudosAvaliados = new Set(todasQuestoes.map(q => (q.conteudo||'').trim().toLowerCase()));
+    const capPorConteudo = {};
+    todasQuestoes.forEach(q => { if (!q.foraDoPrograma && q.conteudo && q.capitulo) capPorConteudo[q.conteudo] = q.capitulo; });
+
+    const conteudosAvaliados = new Set(todasQuestoes.filter(q=>!q.foraDoPrograma).map(q => (q.conteudo||'').trim().toLowerCase()));
 
     const coberturaConteudos = (contexto.conteudos||[]).map(c => {
       const cNorm = c.trim().toLowerCase();
@@ -1085,6 +1104,7 @@ ${JSON.stringify(comProblemas.map(q => ({ numero: q.numero, problemas: q.problem
 
     const recomendacoes = [
       ...naoConf.filter(n=>n.severidade==='erro').map(n=>`Q${n.questao}: ${n.mensagem}`),
+      ...(questoesForaDoPrograma.length>0?[`Validar com o professor se ${questoesForaDoPrograma.length} questão(ões) fora do programa declarado (Q${questoesForaDoPrograma.map(q=>q.numero).join(', Q')}) indicam que o programa está desatualizado ou que a questão deve ser revisada`]:[]),
       ...(cobertura<70?['Ampliar a cobertura de conteúdos do programa na prova']:[]),
       ...(aderenciaEnem<60?['Revisar questões para maior aderência ao modelo ENEM']:[]),
       ...(((dif['Fácil']||0)/total)>0.5?['Aumentar o nível de dificuldade médio da prova']:[]),
@@ -1101,6 +1121,7 @@ ${JSON.stringify(comProblemas.map(q => ({ numero: q.numero, problemas: q.problem
       questoes: todasQuestoes,
       naoConformidades: naoConf,
       coberturaConteudos,
+      questoesForaDoPrograma: questoesForaDoPrograma.map(q => ({ numero: q.numero, assunto: q.conteudo, capituloProximo: q.capitulo, evidencia: q.evidenciaForaDoPrograma })),
       distribuicaoCapitulos: Object.entries(capMap).map(([k,v2])=>({k,v:v2})).filter(d=>d.k&&d.k!=='—'),
       distribuicaoHabilidades: Object.entries(habMap).map(([k,v2])=>({k,v:v2})).sort((a,b)=>b.v-a.v).slice(0,10),
       distribuicaoCompetencias: Object.entries(compMap).map(([k,v2])=>({k,v:v2})),
@@ -1225,6 +1246,17 @@ function renderPainel(r) {
       )}
     </div>
 
+    ${r.questoesForaDoPrograma?.length>0?`
+    <div class="extras-box">
+      <p class="extras-title">⚠ Questões fora do programa declarado (${r.questoesForaDoPrograma.length})</p>
+      ${r.questoesForaDoPrograma.map(q=>`
+        <div class="extra-item">
+          <b>Q${q.numero}</b> — aborda <strong>${q.assunto}</strong>${q.capituloProximo && q.capituloProximo !== '— Fora do programa —' ? ` (mais próximo de: ${q.capituloProximo})` : ''}
+          ${q.evidencia ? `<br><span style="font-size:11.5px;color:var(--text3);font-style:italic">evidência: "${q.evidencia}"</span>` : ''}
+        </div>`).join('')}
+      <p style="font-size:11.5px;color:var(--text3);margin-top:10px;line-height:1.5">Estas questões não correspondem com confiança a nenhum capítulo/conteúdo do programa que o professor declarou. Isso pode indicar que o programa está desatualizado ou que a questão precisa de revisão.</p>
+    </div>`:''}
+
     ${distModEnr.length>0?`
     <div class="panel-card">
       <p class="panel-title">Modelo predominante das questões</p>
@@ -1305,7 +1337,7 @@ function renderQuestoes(questoes) {
           <tr style="background:${i%2===0?'transparent':'var(--bg-alt)'}; cursor:pointer"
               onclick="toggleQDetail(${q.numero})">
             <td style="font-weight:700;font-family:var(--font-mono);color:var(--navy)">${q.numero}</td>
-            <td style="color:var(--blue);font-weight:600;max-width:160px">${q.capitulo||'—'}</td>
+            <td style="color:${q.foraDoPrograma?'var(--accent-deep)':'var(--blue)'};font-weight:600;max-width:160px">${q.foraDoPrograma?'⚠ Fora do programa':(q.capitulo||'—')}</td>
             <td style="color:var(--text2);max-width:120px">${q.competencia||'—'}</td>
             <td style="color:var(--text2);max-width:120px">${q.habilidade||'—'}</td>
             <td style="color:var(--text2);max-width:180px">${q.conteudo||'—'}</td>
@@ -1318,6 +1350,11 @@ function renderQuestoes(questoes) {
           <tr id="qdetail-${q.numero}" style="display:none">
             <td colspan="8" style="padding:0">
               <div style="padding:16px 20px;background:var(--bg-alt);border-left:3px solid ${perfil[q.perfilEnem]||'var(--border)'}">
+                ${q.foraDoPrograma?`
+                <div style="background:var(--accent-soft);border-radius:8px;padding:12px;margin-bottom:12px">
+                  <div style="font-size:10px;font-weight:700;color:var(--accent-deep);text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px">⚠ Fora do programa declarado</div>
+                  <div style="font-size:12px;color:var(--text2);line-height:1.6">Esta questão aborda <strong>${q.conteudo}</strong>, que não corresponde a nenhum item do programa desta avaliação.${q.evidenciaForaDoPrograma?` <span style="color:var(--text3);font-style:italic">Evidência: "${q.evidenciaForaDoPrograma}"</span>`:''}</div>
+                </div>`:''}
                 <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px">
                   <div>
                     <div style="font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:.5px;margin-bottom:3px">Objetivo de aprendizagem</div>
@@ -1669,6 +1706,7 @@ tr{page-break-inside:avoid}
 .rec-row{padding:6px 10px;border-radius:4px;margin-bottom:4px;background:#EDF3FC;display:flex;gap:8px;font-size:11px}
 .rec-n{font-weight:700;color:#D0692D;min-width:18px}
 .lacuna{padding:5px 8px;background:#FCF1E0;border-left:3px solid #D98A2B;border-radius:3px;margin-bottom:3px;font-size:11px}
+.extra{padding:5px 8px;background:#FCEFDF;border-left:3px solid #D0692D;border-radius:3px;margin-bottom:3px;font-size:11px}
 .cobertura-row{display:flex;align-items:center;gap:8px;padding:4px 0;border-bottom:1px solid #f5f5f5;font-size:11px}
 .dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
 .footer{margin-top:24px;padding-top:10px;border-top:1px solid #eee;font-size:9px;color:#aaa;text-align:center}
@@ -1705,6 +1743,11 @@ ${['Excelente','Adequado','Parcialmente adequado','Inadequado'].map(k=>{
   return `<div class="bar-row"><span class="bar-key">${k}</span><div class="bar-track"><div class="bar-fill" style="width:${(vv/mx)*100}%;background:${perfilColors[k]}"></div></div><span class="bar-val">${vv}</span></div>`;
 }).join('')}
 
+${(r.questoesForaDoPrograma||[]).length>0?`
+<h2>Questões fora do programa declarado</h2>
+${r.questoesForaDoPrograma.map(q=>`<div class="extra">Q${q.numero} — aborda "${q.assunto}"${q.evidencia?` — evidência: "${q.evidencia}"`:''}</div>`).join('')}
+`:''}
+
 ${(r.distribuicaoModelos||[]).length>0?`
 <h2>Modelo predominante das questões</h2>
 ${(()=>{const mx=Math.max(...r.distribuicaoModelos.map(d=>d.v),1);return r.distribuicaoModelos.map(d=>`<div class="bar-row"><span class="bar-key">${d.k}</span><div class="bar-track"><div class="bar-fill" style="width:${(d.v/mx)*100}%;background:#D0692D"></div></div><span class="bar-val">${d.v}</span></div>`).join('');})()}
@@ -1737,7 +1780,7 @@ ${(r.coberturaConteudos||[]).map(c=>`
 <tr><th>Q</th><th>Capítulo</th><th>Competência</th><th>Habilidade</th><th>Modelo</th><th>Nível Bloom</th><th>Dificuldade</th><th>Perfil ENEM</th><th>Gabarito</th></tr>
 ${(r.questoes||[]).map(q=>`<tr>
   <td style="font-weight:700;font-family:monospace">${q.numero||'—'}</td>
-  <td>${q.capitulo||'—'}</td>
+  <td>${q.foraDoPrograma?'⚠ Fora do programa':(q.capitulo||'—')}</td>
   <td>${q.competencia||'—'}</td>
   <td>${q.habilidade||'—'}</td>
   <td style="font-size:10px">${q.modeloPrincipal||'—'}</td>
